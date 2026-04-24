@@ -13,7 +13,7 @@ Pelagica is an alternative web frontend for [Jellyfin](https://jellyfin.org) bui
 - **Music Player:** A music player that allows you to listen to your music albums or playlists while browsing your library.
 - **Responsive Design:** Works seamlessly on both desktop and mobile devices.
 - **Theming:** Light and dark mode support as well as custom themes
-- **Localization:** Supports multiple languages through [community contributions](https://gitlocalize.com/repo/10635).
+- **Localization:** Supports multiple languages through [community contributions](https://gitlocalize.com/repo/10758).
 
 You can find a roadmap of planned features and improvements in the [GitHub Projects](https://github.com/users/KartoffelChipss/projects/7).
 
