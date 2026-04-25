@@ -22,5 +22,13 @@
   "not_available": "Nicht verfügbar",
   "not_rated": "Nicht bewertet",
   "recommended_for_you": "Für dich empfohlen",
-  "because_you_watched": "Weil du folgendes gesehen hast:"
+  "because_you_watched": "Weil du folgendes gesehen hast:",
+  "next_up": "Als nächstes",
+  "resume": "Fortsetzen",
+  "unknown_artist": "Unbekannter Künstler",
+  "track_count": "{{count}} Track",
+  "track_count_plural": "{{count}} Tracks",
+  "genres": "Genres",
+  "libraries": "Bibliotheken",
+  "studios": "Studios"
 }
