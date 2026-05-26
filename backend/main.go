@@ -4,6 +4,7 @@ import (
 	"log"
 	"os"
 	"pelagica-backend/appconfig"
+	"pelagica-backend/collector"
 	"pelagica-backend/handlers"
 	"strings"
 
@@ -28,6 +29,8 @@ func main() {
 	appconfig.Setup(app)
 
 	handlers.InitThemeStore()
+
+	collector.RegisterStatsJob()
 
 	var protected fiber.Handler
 	if isAuthEnabled() {

@@ -1,0 +1,132 @@
+package collector
+
+import (
+	"bytes"
+	"encoding/json"
+	"fmt"
+	"net/http"
+	"net/url"
+	"os"
+	"path/filepath"
+	"strings"
+
+	"github.com/google/uuid"
+	"github.com/robfig/cron/v3"
+)
+
+func getPingToken() string {
+	return os.Getenv("COLLECTOR_PING_TOKEN")
+}
+
+func getPingBaseUrl() string {
+	baseUrl := os.Getenv("COLLECTOR_PING_BASE_URL")
+	if baseUrl == "" {
+		baseUrl = "https://stats.pelagica.app"
+	}
+	return baseUrl
+}
+
+func getVersion() string {
+	appVersion := os.Getenv("APP_VERSION")
+	if appVersion == "" {
+		fmt.Printf("Warning: APP_VERSION not set, ping will be sent without version info\n")
+		appVersion = "0.0.0"
+	}
+	return appVersion
+}
+
+func getInstanceIdFile() string {
+	return os.Getenv("COLLECTOR_INSTANCE_ID_FILE")
+}
+
+func getInstanceId() (string, error) {
+	path := getInstanceIdFile()
+	if path == "" {
+		fmt.Printf("Warning: COLLECTOR_INSTANCE_ID_FILE not set, instance ID will not be persisted across restarts\n")
+		return uuid.New().String(), nil
+	}
+
+	if data, err := os.ReadFile(path); err == nil {
+		id := strings.TrimSpace(string(data))
+		if isValidUUIDv4(id) {
+			return id, nil
+		}
+	}
+
+	id := uuid.New().String()
+
+	if err := os.MkdirAll(filepath.Dir(path), 0755); err != nil {
+		return "", fmt.Errorf("failed to create directories for instance ID file: %w", err)
+	}
+	if err := os.WriteFile(path, []byte(id), 0644); err != nil {
+		return "", fmt.Errorf("failed to write instance ID file: %w", err)
+	}
+
+	return id, nil
+}
+
+func isValidUUIDv4(s string) bool {
+	id, err := uuid.Parse(s)
+	return err == nil && id.Version() == 4
+}
+
+func sendPing(baseURL, instanceID, version, token string) error {
+	body := map[string]string{
+		"instance_id": instanceID,
+		"version":     version,
+	}
+	if token != "" {
+		body["token"] = token
+	}
+	payload, err := json.Marshal(body)
+	if err != nil {
+		return fmt.Errorf("failed to marshal ping payload: %w", err)
+	}
+
+	endpoint, err := url.JoinPath(baseURL, "/ping")
+	if err != nil {
+		return fmt.Errorf("invalid base URL: %w", err)
+	}
+	resp, err := http.Post(endpoint, "application/json", bytes.NewReader(payload))
+	if err != nil {
+		return fmt.Errorf("failed to send ping: %w", err)
+	}
+	defer resp.Body.Close()
+
+	switch resp.StatusCode {
+	case http.StatusNoContent:
+		return nil
+	case http.StatusBadRequest:
+		return fmt.Errorf("invalid ping payload")
+	case http.StatusUnauthorized:
+		return fmt.Errorf("ping rejected: unauthorized")
+	case http.StatusTooManyRequests:
+		return fmt.Errorf("ping rejected: rate limit exceeded")
+	default:
+		return fmt.Errorf("unexpected status code: %d", resp.StatusCode)
+	}
+}
+
+func RegisterStatsJob() {
+	c := cron.New()
+	_, err := c.AddFunc("0 0 * * *", func() {
+		instanceId, err := getInstanceId()
+		if err != nil {
+			fmt.Printf("Failed to get instance ID: %v\n", err)
+			return
+		}
+
+		err = sendPing(getPingBaseUrl(), instanceId, getVersion(), getPingToken())
+		if err != nil {
+			fmt.Printf("Failed to send stats ping: %v\n", err)
+		}
+		fmt.Printf("Stats ping sent successfully (instance ID: %s)\n", instanceId)
+	})
+	if err != nil {
+		fmt.Printf("Failed to register stats job: %v\n", err)
+		return
+	}
+	c.Start()
+	fmt.Println("Stats collection job registered to run daily at midnight")
+	defer c.Stop()
+}
