@@ -19,7 +19,6 @@ export const getStatsConsent = async (): Promise<StatsConsent> => {
         throw new Error('Failed to fetch stats consent');
     }
     const data = await res.json();
-    console.log('Stats consent value from server:', data.consent);
     return numberToStatsConsent(data.consent);
 };
 
