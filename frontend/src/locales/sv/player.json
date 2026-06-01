@@ -1,0 +1,15 @@
+{
+  "skipIntro": "Hoppa över intro",
+  "skipOutro": "Hoppa över eftertexter",
+  "audioTracks": "Ljudspår",
+  "subtitles": "Undertexter",
+  "off": "Av",
+  "playNextItem": "Spela upp nästa objekt",
+  "upNext": "Nästa avsnitt om {{seconds}} sekunder",
+  "startNow": "Börja nu",
+  "dismiss": "Avfärda",
+  "seasonEpisode": "S{{season}} AVSNITT{{episode}}",
+  "previousItem": "Föregående objekt",
+  "nextItem": "Nästa objekt",
+  "nowPlaying": "Nu spelas"
+}

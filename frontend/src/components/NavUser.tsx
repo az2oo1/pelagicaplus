@@ -426,6 +426,10 @@ export function NavUser() {
                                     <FlagIcon countryCode="de" />
                                     Deutsch
                                 </DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => i18n.changeLanguage('sv')}>
+                                    <FlagIcon countryCode="se" />
+                                    Svenska
+                                </DropdownMenuItem>
                                 <DropdownMenuItem onClick={() => i18n.changeLanguage('fr')}>
                                     <FlagIcon countryCode="fr" />
                                     Français
