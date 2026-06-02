@@ -14,9 +14,9 @@ const SyncedLines = ({ lines, currentTime, offset, onLineClick }: SyncedLinesPro
     const {
         activeIndex,
         containerRef,
-        disableAutoScroll,
         edgePadding,
         enableAutoScroll,
+        onUserScroll,
         scrollActiveLineIntoView,
         setLineRef,
     } = useSyncedLyrics({
@@ -30,8 +30,9 @@ const SyncedLines = ({ lines, currentTime, offset, onLineClick }: SyncedLinesPro
         <div
             ref={containerRef}
             className="h-full overflow-y-auto overscroll-contain scroll-smooth"
-            onWheel={disableAutoScroll}
-            onTouchMove={disableAutoScroll}
+            onScroll={onUserScroll}
+            onWheel={onUserScroll}
+            onTouchMove={onUserScroll}
         >
             <div
                 className="flex flex-col items-center gap-5 px-4"

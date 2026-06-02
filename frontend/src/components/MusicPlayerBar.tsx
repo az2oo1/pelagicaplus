@@ -23,6 +23,7 @@ import LyricsButton from '@/features/lyrics/LyricsButton';
 import LyricsExpandedPanel from '@/features/lyrics/shell/LyricsExpandedPanel';
 import LyricsInlinePanel from '@/features/lyrics/shell/LyricsInlinePanel';
 import { cn } from '@/lib/utils';
+import { lyricsPanelWidthClass } from '@/features/lyrics/constants';
 
 const formatTime = (timeTicks: number) => {
     const timeSeconds = timeTicks / 10000000;
@@ -359,7 +360,7 @@ const MusicPlayerBar = () => {
                         className={cn(
                             'absolute bottom-full left-1/2 -translate-x-1/2 overflow-hidden',
                             'transition-[max-height] duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)]',
-                            'w-[min(50vw,42rem)] min-w-[min(100%,20rem)]',
+                            lyricsPanelWidthClass,
                             isLyricsOpen ? 'max-h-[calc(70vh)]' : 'max-h-0',
                         )}
                     >
