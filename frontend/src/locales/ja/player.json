@@ -4,5 +4,10 @@
     "audioTracks": "音声トラック",
     "subtitles": "字幕",
     "off": "オフ",
-    "nowPlaying": "再生中"
+    "nowPlaying": "再生中",
+    "lyrics": "歌詞",
+    "showLyrics": "歌詞を表示",
+    "hideLyrics": "歌詞を非表示",
+    "noLyrics": "歌詞がありません",
+    "unsyncedLyrics": "同期されていない歌詞"
 }

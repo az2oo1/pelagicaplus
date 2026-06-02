@@ -11,5 +11,10 @@
   "seasonEpisode": "S{{season}} E{{episode}}",
   "previousItem": "Elément précèdent",
   "nextItem": "Elément suivant",
-  "nowPlaying": "Lecture en cours"
+  "nowPlaying": "Lecture en cours",
+  "lyrics": "Paroles",
+  "showLyrics": "Afficher les paroles",
+  "hideLyrics": "Masquer les paroles",
+  "noLyrics": "Aucune parole disponible",
+  "unsyncedLyrics": "Paroles non synchronisées"
 }
