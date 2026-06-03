@@ -4,5 +4,11 @@
     "audioTracks": "Faixas de Áudio",
     "subtitles": "Legendas",
     "off": "Desligado",
-    "nowPlaying": "Tocando Agora"
+    "nowPlaying": "Tocando Agora",
+    "lyrics": "Letra",
+    "loadingLyrics": "Carregando letra",
+    "showLyrics": "Mostrar letra",
+    "hideLyrics": "Ocultar letra",
+    "noLyrics": "Letra não disponível",
+    "unsyncedLyrics": "Letra não sincronizada"
 }

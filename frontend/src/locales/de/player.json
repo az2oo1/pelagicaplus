@@ -11,5 +11,11 @@
   "seasonEpisode": "S{{season}} E{{episode}}",
   "previousItem": "Vorherige Episode",
   "nextItem": "Nächste Episode",
-  "nowPlaying": "Läuft gerade"
+  "nowPlaying": "Läuft gerade",
+  "lyrics": "Songtext",
+  "loadingLyrics": "Songtext wird geladen",
+  "showLyrics": "Songtext anzeigen",
+  "hideLyrics": "Songtext ausblenden",
+  "noLyrics": "Kein Songtext verfügbar",
+  "unsyncedLyrics": "Nicht synchronisierter Songtext"
 }
