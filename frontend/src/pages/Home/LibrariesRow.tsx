@@ -67,6 +67,7 @@ const LibrariesRow = ({ title }: LibrariesRowProps) => {
                           </div>
                       ))
             }
+            contentInset={true}
         />
     );
 };

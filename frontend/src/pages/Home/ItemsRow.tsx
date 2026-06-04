@@ -159,6 +159,7 @@ const ItemsRow = ({ title, allLink, items, detailFields }: ItemsRowProps) => {
                               </div>
                           ))
                 }
+                contentInset={true}
             />
         )
     );

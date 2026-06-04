@@ -30,8 +30,13 @@ const HomePage = () => {
     const { config } = useConfig();
 
     return (
-        <Page title={config?.serverName || 'Pelagica'} requiresAuth={true}>
-            <div className="flex flex-col gap-4">
+        <Page
+            title={config?.serverName || 'Pelagica'}
+            requiresAuth={true}
+            overlayHeader={true}
+            pagePadding={false}
+        >
+            <div className="flex flex-col gap-4 pb-4">
                 {config.homeScreenSections?.map((section, index) => {
                     if (section.enabled === false) return null;
 
@@ -104,6 +109,7 @@ const HomePage = () => {
                                     title={section.title}
                                     showFavoriteButton={section.showFavoriteButton}
                                     showWatchlistButton={section.showWatchlistButton}
+                                    fadeTop={index != 0}
                                 />
                             );
 

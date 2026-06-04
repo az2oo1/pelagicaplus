@@ -35,6 +35,7 @@ const GenresRow = ({ title, limit }: GenresRowProps) => {
                           </div>
                       ))
             }
+            contentInset={true}
         />
     );
 };

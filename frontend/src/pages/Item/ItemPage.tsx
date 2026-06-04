@@ -1,4 +1,4 @@
-import { useParams } from 'react-router';
+import { Navigate, useParams } from 'react-router';
 import Page from '../Page';
 import { useItem } from '@/hooks/api/useItem';
 import MoviePage from './MoviePage';
@@ -15,6 +15,7 @@ import MusicAlbumPage from './MusicAlbumPage';
 import PlaylistPage from './PlaylistPage';
 import GenrePage from './GenrePage';
 import StudioPage from './StudioPage';
+import type { BaseItemKind } from '@jellyfin/sdk/lib/generated-client/models';
 import MusicArtistPage from './MusicArtistPage';
 
 const ItemPageSkeleton = memo(() => {
@@ -27,7 +28,7 @@ const ItemPageSkeleton = memo(() => {
             </div>
 
             {/* logo */}
-            <div className="h-2/5 flex items-center justify-center">
+            <div className="h-2/5 flex items-center justify-center py-30">
                 <Skeleton className="relative mx-auto px-4 h-32 w-48 object-contain rounded-md" />
             </div>
 
@@ -96,6 +97,12 @@ const ItemPageSkeleton = memo(() => {
 
 ItemPageSkeleton.displayName = 'ItemPageSkeleton';
 
+const FULL_PAGE_ITEM_TYPES: BaseItemKind[] = ['Movie', 'Series', 'Episode', 'Season', 'BoxSet'];
+
+const REDIRECT_ITEM_TYPES: Partial<Record<BaseItemKind, string>> = {
+    Person: '/person',
+};
+
 const ItemPage = () => {
     const { t } = useTranslation('item');
     const params = useParams<{ itemId: string }>();
@@ -104,10 +111,20 @@ const ItemPage = () => {
     const { config, loading: configLoading } = useConfig();
     const { data: item, isLoading, error } = useItem(itemId, true, getUserId() || undefined);
 
+    const redirectPath =
+        item?.Type && REDIRECT_ITEM_TYPES[item.Type]
+            ? `${REDIRECT_ITEM_TYPES[item.Type]}/${item.Id}`
+            : null;
+    if (redirectPath) return <Navigate to={redirectPath} replace />;
+
+    const isFullPageItem = item && FULL_PAGE_ITEM_TYPES.includes(item.Type as BaseItemKind);
+
     return (
         <Page
             title={item ? `${item.Name}` : isLoading ? t('loading') : t('item_not_found')}
             className="flex-1 flex flex-col"
+            overlayHeader={isFullPageItem}
+            pagePadding={!isFullPageItem}
         >
             {(isLoading || configLoading) && <ItemPageSkeleton />}
             {error && <p>Error loading item details.</p>}

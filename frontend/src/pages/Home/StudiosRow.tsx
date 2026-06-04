@@ -66,6 +66,7 @@ const StudiosRow = ({ title, limit }: StudiosRowProps) => {
                           </div>
                       ))
             }
+            contentInset={true}
         />
     );
 };

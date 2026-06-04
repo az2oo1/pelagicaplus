@@ -26,7 +26,8 @@ const BoxSetPage = ({ item, config }: BoxSetPageProps) => {
             itemId={item.Id || ''}
             name={item.Name || ''}
             showLogo={false}
-            topPadding={false}
+            topPadding={true}
+            topPaddingMinHeight="5rem"
         >
             <div className="flex flex-col md:flex-row gap-6 max-w-7xl">
                 {!primaryImageError && item.Id && (

@@ -159,6 +159,7 @@ export function BaseContinueRow({
                                   );
                               })
                     }
+                    contentInset={true}
                 />
             )}
         </>

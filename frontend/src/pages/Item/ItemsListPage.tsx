@@ -11,7 +11,7 @@ import {
     Star,
     ImageOff,
 } from 'lucide-react';
-import { type ReactNode, useEffect, useRef, useState } from 'react';
+import { type ReactNode, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useSearchParams } from 'react-router';
 import ItemPagination from '@/components/ItemPagination';
@@ -127,8 +127,6 @@ const ItemsListPage = ({
     renderItemOverlay,
 }: ItemsListPageProps) => {
     const { t } = useTranslation(['item', 'library']);
-    const pageRef = useRef<HTMLDivElement>(null);
-    const scrollAfterLoadRef = useRef(false);
     const [searchParams, setSearchParams] = useSearchParams();
     const pageParam = parseInt(searchParams.get('page') ?? '0', 10);
     const sortByParam = (searchParams.get('sortBy') as ItemSortBy) || DEFAULT_SORT_BY;
@@ -176,32 +174,21 @@ const ItemsListPage = ({
         startIndex: page * pageSize,
     });
 
-    useEffect(() => {
-        if (!scrollAfterLoadRef.current) return;
-        if (pageRef.current && !loadingItems && items?.items?.length) {
-            pageRef.current.scrollIntoView({ block: 'start' });
-            scrollAfterLoadRef.current = false;
-        }
-    }, [items?.items, loadingItems]);
-
     const handlePageChange = (newPage: number) => {
         setPage(newPage);
         updateSearchParams(newPage);
-        scrollAfterLoadRef.current = true;
     };
 
     const handleSortChange = (newSortBy: ItemSortBy) => {
         setSortBy(newSortBy);
         setPage(0);
         updateSearchParams(0, newSortBy, sortOrder);
-        scrollAfterLoadRef.current = true;
     };
 
     const handleSortOrderChange = (newSortOrder: SortOrder) => {
         setSortOrder(newSortOrder);
         setPage(0);
         updateSearchParams(0, sortBy, newSortOrder);
-        scrollAfterLoadRef.current = true;
     };
 
     const totalPages = items?.totalCount ? Math.ceil(items.totalCount / pageSize) : 0;
@@ -209,7 +196,7 @@ const ItemsListPage = ({
         'grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-7 2xl:grid-cols-9';
 
     return (
-        <div ref={pageRef}>
+        <div>
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
                 <h2 className="text-2xl font-bold">{listTitle ?? item.Name}</h2>
                 <ButtonGroup>

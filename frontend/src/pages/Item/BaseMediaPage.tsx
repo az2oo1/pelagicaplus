@@ -8,6 +8,7 @@ interface BaseMediaPageProps {
     children?: React.ReactNode;
     showLogo?: boolean;
     topPadding?: boolean;
+    topPaddingMinHeight?: string;
     logo?: React.ReactNode;
 }
 
@@ -17,6 +18,7 @@ const BaseMediaPage = ({
     children,
     showLogo = true,
     topPadding = true,
+    topPaddingMinHeight = '45dvh',
     logo,
 }: BaseMediaPageProps) => {
     const { setBackground } = usePageBackground();
@@ -60,7 +62,10 @@ const BaseMediaPage = ({
                 <div className="absolute bottom-0 left-0 h-full w-full px-4 bg-linear-to-t from-background to-transparent rounded-md" />
             </div>
             {topPadding && (
-                <div className="h-[calc(40dvh-2rem)] flex items-center justify-center">
+                <div
+                    className={`flex items-center justify-center`}
+                    style={{ minHeight: `calc(${topPaddingMinHeight} - 2rem)` }}
+                >
                     {showLogo && !failedLogo && (
                         <>
                             {logo || (
