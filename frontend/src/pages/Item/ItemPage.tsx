@@ -1,4 +1,4 @@
-import { useParams } from 'react-router';
+import { useNavigate, useParams } from 'react-router';
 import Page from '../Page';
 import { useItem } from '@/hooks/api/useItem';
 import MoviePage from './MoviePage';
@@ -99,13 +99,23 @@ ItemPageSkeleton.displayName = 'ItemPageSkeleton';
 
 const FULL_PAGE_ITEM_TYPES: BaseItemKind[] = ['Movie', 'Series', 'Episode', 'Season', 'BoxSet'];
 
+const READIRECT_ITEM_TYPES: Partial<Record<BaseItemKind, string>> = {
+    Person: '/person',
+};
+
 const ItemPage = () => {
+    const navigate = useNavigate();
     const { t } = useTranslation('item');
     const params = useParams<{ itemId: string }>();
     const itemId = params.itemId;
 
     const { config, loading: configLoading } = useConfig();
     const { data: item, isLoading, error } = useItem(itemId, true, getUserId() || undefined);
+
+    if (item && item.Type && READIRECT_ITEM_TYPES[item.Type]) {
+        navigate(READIRECT_ITEM_TYPES[item.Type] + '/' + item.Id);
+        return null;
+    }
 
     const isFullPageItem = item && FULL_PAGE_ITEM_TYPES.includes(item.Type as BaseItemKind);
 
