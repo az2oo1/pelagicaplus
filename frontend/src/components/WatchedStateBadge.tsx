@@ -22,7 +22,7 @@ const WatchedStateBadge = ({ item, show }: WatchedStateBadgeProps) => {
 
     if (shouldShowUnplayedCount) {
         return (
-            <div className="absolute top-1.5 right-1.5 bg-black/70 text-white text-xs font-semibold rounded-full py-1.5 w-8 flex items-center justify-center z-20">
+            <div className="absolute top-1.5 right-1.5 bg-black/70 text-white text-xs font-semibold rounded-full py-1.5 w-8 flex items-center justify-center z-30">
                 {unplayedItemCount! > 99 ? '99+' : unplayedItemCount}
             </div>
         );
@@ -30,7 +30,7 @@ const WatchedStateBadge = ({ item, show }: WatchedStateBadgeProps) => {
 
     if (playedItem) {
         return (
-            <div className="absolute top-1.5 right-1.5 bg-green-600 text-white text-xs font-semibold rounded-full w-6 h-6 flex items-center justify-center z-20">
+            <div className="absolute top-1.5 right-1.5 bg-green-600 text-white text-xs font-semibold rounded-full w-6 h-6 flex items-center justify-center z-30">
                 <Check className="w-3 h-3" />
             </div>
         );

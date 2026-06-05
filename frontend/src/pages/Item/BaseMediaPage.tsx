@@ -24,6 +24,13 @@ const BaseMediaPage = ({
     const { setBackground } = usePageBackground();
     const [failedBackdrop, setFailedBackdrop] = useState(false);
     const [failedLogo, setFailedLogo] = useState(false);
+    const [isBgLoaded, setIsBgLoaded] = useState(false);
+    const [prevItemId, setPrevItemId] = useState(itemId);
+
+    if (itemId !== prevItemId) {
+        setPrevItemId(itemId);
+        setIsBgLoaded(false);
+    }
 
     useEffect(() => {
         setBackground(
@@ -50,14 +57,22 @@ const BaseMediaPage = ({
             <div className="absolute top-0 left-0 h-[calc(75dvh-2rem)] w-full -z-10">
                 {!failedBackdrop && (
                     <img
-                        className="h-full w-full object-cover rounded-md border border-border"
+                        className={[
+                            'h-full w-full object-cover rounded-md border border-border',
+                            'transition-[filter,opacity] duration-700 ease-out',
+                            isBgLoaded ? 'blur-0 opacity-100' : 'blur-lg opacity-0',
+                        ].join(' ')}
                         src={getBackdropUrl(itemId || '')}
                         alt={name + ' Backdrop'}
+                        onLoad={() => setIsBgLoaded(true)}
                         onError={() => setFailedBackdrop(true)}
                     />
                 )}
                 {failedBackdrop && (
                     <div className="h-full w-full rounded-md border border-border" />
+                )}
+                {!isBgLoaded && !failedBackdrop && (
+                    <div className="absolute inset-0 rounded-md bg-muted/30 animate-pulse" />
                 )}
                 <div className="absolute bottom-0 left-0 h-full w-full px-4 bg-linear-to-t from-background to-transparent rounded-md" />
             </div>

@@ -6,6 +6,10 @@ import { useConfig } from '@/hooks/api/useConfig';
 import WatchedStateBadge from './WatchedStateBadge';
 import { useState } from 'react';
 import { ImageOff } from 'lucide-react';
+import { cn } from '@/lib/utils';
+import GenreOverlay from './GenreOverlay';
+import PosterPlayButton from './PosterPlayButton';
+import { useMusicPlayback } from '@/hooks/useMusicPlayback';
 
 interface ScrollableSectionPosterProps {
     item?: BaseItemDto;
@@ -14,6 +18,8 @@ interface ScrollableSectionPosterProps {
     itemName?: string;
     itemId?: string;
     className?: string;
+    showGenres?: boolean;
+    showPlayButton?: boolean;
 }
 
 const ScrollableSectionPoster = ({
@@ -23,11 +29,19 @@ const ScrollableSectionPoster = ({
     itemName,
     itemId,
     className,
+    showGenres = false,
+    showPlayButton = false,
 }: ScrollableSectionPosterProps) => {
     const { config } = useConfig();
+    const { loadQueue } = useMusicPlayback();
     const [posterFailed, setPosterFailed] = useState(false);
+    const [isImageLoaded, setIsImageLoaded] = useState(false);
 
-    const isSquareType = item?.Type === 'Playlist' || item?.Type === 'MusicAlbum';
+    const isSquareType =
+        item?.Type === 'Playlist' ||
+        item?.Type === 'MusicAlbum' ||
+        item?.Type === 'Audio' ||
+        item?.Type === 'MusicArtist';
     const posterClasses = isSquareType
         ? 'w-36 h-36 lg:w-44 lg:h-44 2xl:w-52 2xl:h-52'
         : 'w-36 h-54 lg:w-44 lg:h-64 2xl:w-52 2xl:h-80';
@@ -37,18 +51,42 @@ const ScrollableSectionPoster = ({
     const skeletonClasses = isSquareType ? 'h-36 lg:h-44 2xl:h-52' : 'h-54 lg:h-64 2xl:h-80';
 
     const primaryImageTag = item?.ImageTags?.Primary;
+    const targetImageId = item?.Type === 'Audio' && item.AlbumId ? item.AlbumId : (itemId || item?.Id || '');
+    const targetImageTag = item?.Type === 'Audio' && item.AlbumId ? undefined : primaryImageTag;
+
+    const handleClick = (e: React.MouseEvent) => {
+        if (item?.Type === 'Audio') {
+            e.preventDefault();
+            loadQueue([
+                {
+                    id: itemId || item.Id || '',
+                    title: itemName || item.Name || '',
+                    artist: item.AlbumArtist || (item.Artists && item.Artists[0]) || 'Unknown',
+                    albumId: item.AlbumId || '',
+                    albumName: item.Album || '',
+                }
+            ], 0, true);
+        }
+    };
 
     if (posterFailed) {
         return (
-            <Link to={`/item/${itemId || item?.Id}`} key={itemId || item?.Id} className={className}>
+            <Link
+                to={`/item/${itemId || item?.Id}`}
+                key={itemId || item?.Id}
+                className={cn('group block', className)}
+                onClick={handleClick}
+            >
                 <div
-                    className={`relative overflow-hidden rounded-md group ${posterClasses} bg-muted flex items-center justify-center`}
+                    className={`relative overflow-hidden rounded-md ${posterClasses} bg-muted flex items-center justify-center`}
                 >
                     <ImageOff className="text-muted-foreground" size={32} />
                     <WatchedStateBadge
                         item={item}
                         show={config?.watchedStateBadgeHomeScreen || false}
                     />
+                    <GenreOverlay item={item} show={showGenres && item?.Type !== 'Playlist' && item?.Type !== 'MusicAlbum' && item?.Type !== 'Audio'} />
+                    <div className="absolute inset-0 rounded-md pointer-events-none poster-card-outline z-20" />
                 </div>
                 <p className="mt-2 text-sm line-clamp-1 text-ellipsis break-all max-w-36 lg:max-w-44 2xl:max-w-52">
                     {itemName || item?.Name || ''}
@@ -59,22 +97,41 @@ const ScrollableSectionPoster = ({
     }
 
     return (
-        <Link to={`/item/${itemId || item?.Id}`} key={itemId || item?.Id} className={className}>
-            <div className={`relative overflow-hidden rounded-md group ${posterClasses}`}>
+        <Link
+            to={`/item/${itemId || item?.Id}`}
+            key={itemId || item?.Id}
+            className={cn('group block', className)}
+            onClick={handleClick}
+        >
+            <div className={`relative overflow-hidden rounded-md ${posterClasses}`}>
                 <img
                     key={itemId || item?.Id}
                     src={
                         posterUrl
                             ? posterUrl
                             : getPrimaryImageUrl(
-                                  itemId || item?.Id || '',
+                                  targetImageId,
                                   undefined,
-                                  primaryImageTag
+                                  targetImageTag
                               )
                     }
                     alt={itemName || item?.Name || ''}
-                    className={`${minPosterClasses} ${posterClasses} object-cover rounded-md group-hover:opacity-75 transition-all group-hover:scale-105 transform-gpu will-change-transform z-10`}
+                    className={cn(
+                        minPosterClasses,
+                        posterClasses,
+                        'object-cover rounded-md transform-gpu will-change-transform z-10',
+                        // Loading snap: no transition until image is ready, then hover effects are smooth
+                        isImageLoaded
+                            ? [
+                                  'transition-[opacity,transform,scale] duration-[250ms] ease-out',
+                                  'opacity-100 scale-100',
+                                  'group-hover:opacity-90 group-hover:scale-105',
+                              ].join(' ')
+                            : // While loading: blurred/dim, NO transition (instant snap on load)
+                              'opacity-40 scale-95 blur-sm'
+                    )}
                     loading="lazy"
+                    onLoad={() => setIsImageLoaded(true)}
                     onError={() => setPosterFailed(true)}
                 />
                 <Skeleton className={`absolute bottom-0 left-0 right-0 ${skeletonClasses} -z-1`} />
@@ -82,6 +139,12 @@ const ScrollableSectionPoster = ({
                     item={item}
                     show={config?.watchedStateBadgeHomeScreen || false}
                 />
+                <GenreOverlay item={item} show={showGenres && item?.Type !== 'Playlist' && item?.Type !== 'MusicAlbum' && item?.Type !== 'Audio'} />
+                <div className="absolute inset-0 rounded-md pointer-events-none poster-card-outline z-20" />
+
+                {showPlayButton && (
+                    <PosterPlayButton item={item} itemId={itemId} />
+                )}
             </div>
             <p className="mt-2 text-sm line-clamp-1 text-ellipsis break-all max-w-36 lg:max-w-44 2xl:max-w-52">
                 {itemName || item?.Name || ''}
@@ -90,5 +153,4 @@ const ScrollableSectionPoster = ({
         </Link>
     );
 };
-
 export default ScrollableSectionPoster;

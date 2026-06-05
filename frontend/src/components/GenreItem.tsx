@@ -27,7 +27,7 @@ const GenreItem = ({
                 {!posterError ? (
                     <>
                         <img
-                            src={`${posterUrl}?maxWidth=416&maxHeight=640&quality=85`}
+                            src={`${posterUrl}&maxWidth=416&maxHeight=640&quality=85`}
                             alt={genreWithItem.item?.Name || 'No Title'}
                             className="absolute inset-0 w-full h-full object-cover transition-all group-hover:scale-105 group-hover:opacity-75 grayscale"
                             loading="lazy"

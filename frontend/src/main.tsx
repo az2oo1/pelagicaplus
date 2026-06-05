@@ -13,6 +13,7 @@ import { SearchProvider } from './context/SearchProvider.tsx';
 import { SearchCommand } from './components/SearchCommand.tsx';
 import { KeyboardShortcuts } from './components/KeyboardShortcuts.tsx';
 import ItemPage from './pages/Item/ItemPage.tsx';
+import StudioPage from './pages/Item/StudioPage.tsx';
 import NotFoundPage from './pages/NotFound/NotFoundPage.tsx';
 import PlayerPage from './pages/Player/PlayerPage.tsx';
 import PersonPage from './pages/Person/PersonPage.tsx';
@@ -23,6 +24,7 @@ import PelagicaThemeLoader from './components/PelagicaThemeProvider.tsx';
 import ThemeBrowserPage from './pages/ThemeBroser/ThemeBrowserPage.tsx';
 import { Toaster } from './components/ui/sonner.tsx';
 import StatsConsentModal from './components/StatsConsentModal.tsx';
+import { AppPreloader } from './components/AppPreloader.tsx';
 
 const queryClient = new QueryClient();
 
@@ -37,18 +39,21 @@ createRoot(document.getElementById('root')!).render(
                         <PelagicaThemeLoader />
                         <Toaster />
                         <StatsConsentModal />
-                        <Routes>
-                            <Route path="/" element={<HomePage />} />
-                            <Route path="/library" element={<LibraryPage />} />
-                            <Route path="/item/:itemId" element={<ItemPage />} />
-                            <Route path="/person/:itemId" element={<PersonPage />} />
-                            <Route path="/login" element={<LoginPage />} />
-                            <Route path="/play/:itemId" element={<PlayerPage />} />
-                            <Route path="/settings" element={<SettingsPage />} />
-                            <Route path="/browse-themes" element={<ThemeBrowserPage />} />
-                            <Route path="/search" element={<SearchPage />} />
-                            <Route path="*" element={<NotFoundPage />} />
-                        </Routes>
+                        <AppPreloader>
+                            <Routes>
+                                <Route path="/" element={<HomePage />} />
+                                <Route path="/library" element={<LibraryPage />} />
+                                <Route path="/item/:itemId" element={<ItemPage />} />
+                                <Route path="/studio/:studioId" element={<StudioPage />} />
+                                <Route path="/person/:itemId" element={<PersonPage />} />
+                                <Route path="/login" element={<LoginPage />} />
+                                <Route path="/play/:itemId" element={<PlayerPage />} />
+                                <Route path="/settings" element={<SettingsPage />} />
+                                <Route path="/browse-themes" element={<ThemeBrowserPage />} />
+                                <Route path="/search" element={<SearchPage />} />
+                                <Route path="*" element={<NotFoundPage />} />
+                            </Routes>
+                        </AppPreloader>
                     </BrowserRouter>
                 </SearchProvider>
             </MusicPlaybackProvider>

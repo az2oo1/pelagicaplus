@@ -104,7 +104,7 @@ const SongDropDown = ({ track, t }: { track: BaseItemDto; t: TFunction }) => {
     };
 
     return (
-        <DropdownMenu>
+        <DropdownMenu modal={false}>
             <DropdownMenuTrigger asChild>
                 <Button variant={'outline'} size={'icon-sm'} onClick={(e) => e.stopPropagation()}>
                     <EllipsisVertical />

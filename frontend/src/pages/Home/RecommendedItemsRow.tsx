@@ -11,6 +11,7 @@ import { Star, TrendingUp } from 'lucide-react';
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router';
+import type { BaseItemDto, BaseItemKind } from '@jellyfin/sdk/lib/generated-client/models';
 
 interface RecommendedItemsRowProps {
     title?: string;
@@ -77,64 +78,80 @@ const RecommendedItemsRow = ({
                 title={<h2 className="text-2xl font-bold flex items-center gap-2">{title}</h2>}
                 items={
                     recommendedItems
-                        ? recommendedItems.data.map((item) => (
-                              <ScrollableSectionPoster
-                                  key={item.item.id}
-                                  itemId={item.item.id}
-                                  itemName={item.item.name}
-                                  posterUrl={posterUrls[item.item.id!]}
-                                  className="relative w-min"
-                              >
-                                  {showSimilarity && (
-                                      <Badge
-                                          variant={'secondary'}
-                                          className={`absolute top-2 left-2 z-20 ${
-                                              item.similarity >= 0.6
-                                                  ? 'text-green-400'
-                                                  : item.similarity >= 0.3
-                                                    ? 'text-yellow-400'
-                                                    : 'text-red-400'
-                                          }`}
-                                      >
-                                          <TrendingUp />
-                                          {(item.similarity * 100).toFixed(0)}%
-                                      </Badge>
-                                  )}
-                                  {showBasedOn && item.basedOn.length > 0 ? (
-                                      <>
-                                          <p className="mb-1 text-xs text-muted-foreground">
-                                              {t('because_you_watched')}
-                                          </p>
-                                          <div className="flex gap-3">
-                                              {item.basedOn.map((basedOnItem) => (
-                                                  <Link
-                                                      to={`/item/${basedOnItem.id}`}
-                                                      key={basedOnItem.id}
-                                                      className="w-1/3"
-                                                      title={basedOnItem.name}
-                                                  >
-                                                      <img
+                        ? recommendedItems.data.map((item) => {
+                              const mappedItem: BaseItemDto = {
+                                  Id: item.item.id,
+                                  Name: item.item.name,
+                                  Type: item.item.type as BaseItemKind,
+                                  Genres: item.item.genres,
+                                  ImageTags: item.item.primaryImageTag
+                                      ? { Primary: item.item.primaryImageTag }
+                                      : undefined,
+                              };
+                              return (
+                                  <ScrollableSectionPoster
+                                      key={item.item.id}
+                                      item={mappedItem}
+                                      itemId={item.item.id}
+                                      itemName={item.item.name}
+                                      posterUrl={posterUrls[item.item.id!]}
+                                      className="relative w-min"
+                                      showGenres={true}
+                                      showPlayButton={true}
+                                  >
+                                      {showSimilarity && (
+                                          <Badge
+                                              variant={'secondary'}
+                                              className={`absolute top-2 left-2 z-20 ${
+                                                  item.similarity >= 0.6
+                                                      ? 'text-green-400'
+                                                      : item.similarity >= 0.3
+                                                        ? 'text-yellow-400'
+                                                        : 'text-red-400'
+                                              }`}
+                                          >
+                                              <TrendingUp />
+                                              {(item.similarity * 100).toFixed(0)}%
+                                          </Badge>
+                                      )}
+                                      {showBasedOn && item.basedOn.length > 0 ? (
+                                          <>
+                                              <p className="mb-1 text-xs text-muted-foreground">
+                                                  {t('because_you_watched')}
+                                              </p>
+                                              <div className="flex gap-3">
+                                                  {item.basedOn.map((basedOnItem) => (
+                                                      <Link
+                                                          to={`/item/${basedOnItem.id}`}
                                                           key={basedOnItem.id}
-                                                          src={basedOnPosterUrls[basedOnItem.id!]}
-                                                          alt={basedOnItem.name + ' Poster'}
-                                                          className="w-full object-cover rounded"
-                                                      />
-                                                  </Link>
-                                              ))}
+                                                          className="w-1/3"
+                                                          title={basedOnItem.name}
+                                                      >
+                                                          <img
+                                                              key={basedOnItem.id}
+                                                              src={
+                                                                  basedOnPosterUrls[basedOnItem.id!]
+                                                              }
+                                                              alt={basedOnItem.name + ' Poster'}
+                                                              className="w-full object-cover rounded"
+                                                          />
+                                                      </Link>
+                                                  ))}
+                                              </div>
+                                          </>
+                                      ) : (
+                                          <div>
+                                              {item.item.communityRating && (
+                                                  <span className="text-xs text-muted-foreground mr-3 flex items-center gap-1">
+                                                      <Star size={14} />
+                                                      {item.item.communityRating.toFixed(1)}
+                                                  </span>
+                                              )}
                                           </div>
-                                      </>
-                                  ) : (
-                                      <div>
-                                          {item.item.communityRating && (
-                                              <span className="text-xs text-muted-foreground mr-3 flex items-center gap-1">
-                                                  <Star size={14} />
-                                                  {item.item.communityRating.toFixed(1)}
-                                              </span>
-                                          )}
-                                      </div>
-                                  )}
-                              </ScrollableSectionPoster>
-                          ))
+                                      )}
+                                  </ScrollableSectionPoster>
+                              );
+                          })
                         : Array.from({ length: 5 }).map((_, index) => (
                               <div key={index} className="w-36 lg:w-44 2xl:w-52">
                                   <Skeleton className="w-36 h-54 lg:w-44 lg:h-64 2xl:w-52 2xl:h-80 rounded-md mb-2" />

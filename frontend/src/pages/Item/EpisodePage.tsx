@@ -84,10 +84,10 @@ const EpisodePage = ({ item, config }: EpisodePageProps) => {
                             />
                         )}
                         {progress > 0 && (
-                            <div className="absolute bottom-0 left-0 right-0 h-1 bg-gray-700">
+                            <div className="absolute bottom-0 left-0 right-0 h-1 bg-black/60 rounded-b-md overflow-hidden z-15">
                                 <div
                                     style={{ width: `${progress}%` }}
-                                    className="h-full bg-brand transition-width"
+                                    className="h-full bg-white/70 transition-width"
                                 />
                             </div>
                         )}

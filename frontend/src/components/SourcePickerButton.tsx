@@ -50,7 +50,7 @@ const SourcePickerButton = ({
             {hasMultipleSources && (
                 <>
                     <ButtonGroupSeparator />
-                    <DropdownMenu>
+                    <DropdownMenu modal={false}>
                         <DropdownMenuTrigger asChild>
                             <Button className="rounded-l-none px-2" aria-label={playLabel}>
                                 <ChevronDown className="h-4 w-4" />

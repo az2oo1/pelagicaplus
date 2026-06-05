@@ -116,7 +116,7 @@ export const SearchCommand = () => {
                                 <div className="flex items-start gap-3 w-full">
                                     <div className="relative w-13 h-20 overflow-hidden rounded-md shrink-0">
                                         <img
-                                            src={`${posterUrls[item.Id!]}?maxWidth=96&maxHeight=144&quality=85`}
+                                            src={`${posterUrls[item.Id!]}&maxWidth=96&maxHeight=144&quality=85`}
                                             alt={item.Name || ''}
                                             className="w-full h-full object-cover rounded-md"
                                             loading="lazy"

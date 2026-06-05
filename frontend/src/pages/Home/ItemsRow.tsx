@@ -7,7 +7,7 @@ import { Link } from 'react-router';
 import { useEffect, useMemo, type ReactNode } from 'react';
 import type { BaseItemDto } from '@jellyfin/sdk/lib/generated-client/models';
 import { getEndsAt, ticksToReadableTime } from '@/utils/timeConversion';
-import { Star } from 'lucide-react';
+import { Star, Film, Tv } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import type { TFunction } from 'i18next';
 import ScrollableSectionPoster from '@/components/ScrollableSectionPoster';
@@ -26,25 +26,49 @@ function getDetailFieldsStringForItem(
     t: TFunction
 ): ReactNode {
     switch (detailField) {
-        case 'ReleaseYear':
-            return item.PremiereDate
+        case 'ReleaseYear': {
+            const yearStr = item.PremiereDate
                 ? new Date(item.PremiereDate).getFullYear().toString()
                 : t('release_year_unknown');
-        case 'ReleaseYearAndMonth':
-            return item.PremiereDate
+            return (
+                <span className="flex items-center gap-1">
+                    {item.Type === 'Movie' && <Film className="w-3.5 h-3.5 shrink-0" />}
+                    {item.Type === 'Series' && <Tv className="w-3.5 h-3.5 shrink-0" />}
+                    <span>{yearStr}</span>
+                </span>
+            );
+        }
+        case 'ReleaseYearAndMonth': {
+            const dateStr = item.PremiereDate
                 ? new Date(item.PremiereDate).toLocaleDateString(undefined, {
                       year: 'numeric',
                       month: 'long',
                   })
                 : t('release_date_unknown');
-        case 'ReleaseDate':
-            return item.PremiereDate
+            return (
+                <span className="flex items-center gap-1">
+                    {item.Type === 'Movie' && <Film className="w-3.5 h-3.5 shrink-0" />}
+                    {item.Type === 'Series' && <Tv className="w-3.5 h-3.5 shrink-0" />}
+                    <span>{dateStr}</span>
+                </span>
+            );
+        }
+        case 'ReleaseDate': {
+            const dateStr = item.PremiereDate
                 ? new Date(item.PremiereDate).toLocaleDateString(undefined, {
                       year: 'numeric',
                       month: 'long',
                       day: 'numeric',
                   })
                 : t('release_date_unknown');
+            return (
+                <span className="flex items-center gap-1">
+                    {item.Type === 'Movie' && <Film className="w-3.5 h-3.5 shrink-0" />}
+                    {item.Type === 'Series' && <Tv className="w-3.5 h-3.5 shrink-0" />}
+                    <span>{dateStr}</span>
+                </span>
+            );
+        }
         case 'CommunityRating':
             return item.CommunityRating ? (
                 <div className="flex items-center gap-1">
@@ -135,7 +159,9 @@ const ItemsRow = ({ title, allLink, items, detailFields }: ItemsRowProps) => {
                               <ScrollableSectionPoster
                                   key={item.Id}
                                   item={item}
-                                  posterUrl={`${posterUrls[item.Id!]}?maxWidth=416&maxHeight=640&quality=85`}
+                                  posterUrl={`${posterUrls[item.Id!]}&maxWidth=416&maxHeight=640&quality=85`}
+                                  showGenres={true}
+                                  showPlayButton={true}
                               >
                                   <div className="flex flex-wrap items-center mt-1">
                                       {detailFields && detailFields.length > 0

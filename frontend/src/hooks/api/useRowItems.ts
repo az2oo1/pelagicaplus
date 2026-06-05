@@ -31,6 +31,7 @@ export function useRowItems(items?: SectionItemsConfig) {
                 tags: items?.tags,
                 isFavorite: items?.isFavorite ?? undefined,
                 enableUserData: true,
+                fields: ['Genres'],
                 filters,
                 locationTypes: ['FileSystem'],
             });

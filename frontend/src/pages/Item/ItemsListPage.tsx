@@ -23,6 +23,7 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 import { ButtonGroup } from '@/components/ui/button-group';
+import { useMusicPlayback } from '@/hooks/useMusicPlayback';
 
 const ITEM_ROWS = 5;
 const DEFAULT_SORT_BY: ItemSortBy = 'Name';
@@ -70,16 +71,39 @@ interface ItemDisplayProps {
 
 const ItemDisplay = ({ item, aspectClass, overlay }: ItemDisplayProps) => {
     const { t } = useTranslation('item');
+    const { loadQueue } = useMusicPlayback();
     const [posterError, setPosterError] = useState(false);
+    const targetImageId = item.Type === 'Audio' && item.AlbumId ? item.AlbumId : item.Id!;
+    const targetImageTag = item.Type === 'Audio' && item.AlbumId ? undefined : item.ImageTags?.Primary;
+
+    const handleClick = (e: React.MouseEvent) => {
+        if (item.Type === 'Audio') {
+            e.preventDefault();
+            loadQueue([
+                {
+                    id: item.Id || '',
+                    title: item.Name || '',
+                    artist: item.AlbumArtist || (item.Artists && item.Artists[0]) || 'Unknown',
+                    albumId: item.AlbumId || '',
+                    albumName: item.Album || '',
+                }
+            ], 0, true);
+        }
+    };
 
     return (
-        <Link to={`/item/${item.Id}`} key={item.Id} className="p-0 m-0">
+        <Link
+            to={`/item/${item.Id}`}
+            key={item.Id}
+            className="p-0 m-0"
+            onClick={handleClick}
+        >
             <div className={`relative w-full ${aspectClass} overflow-hidden rounded-md group`}>
                 {!posterError ? (
                     <>
                         <img
                             key={item.Id}
-                            src={getPrimaryImageUrl(item.Id!, undefined, item.ImageTags?.Primary)}
+                            src={getPrimaryImageUrl(targetImageId, undefined, targetImageTag)}
                             alt={item.Name || t('library:no_title')}
                             className="w-full h-full object-cover rounded-md group-hover:opacity-75 transition-all group-hover:scale-105 z-10"
                             loading="lazy"

@@ -8,6 +8,7 @@ import { getPrimaryImageUrl, getThumbUrl } from '@/utils/jellyfinUrls';
 import { Skeleton } from '@/components/ui/skeleton';
 import SectionScroller from '@/components/SectionScroller';
 import type { BaseItemDto } from '@jellyfin/sdk/lib/generated-client/models';
+import { cn } from '@/lib/utils';
 
 interface BaseContinueRowProps {
     title: string;
@@ -30,8 +31,14 @@ export function BaseContinueRow({
     const navigate = useNavigate();
 
     const [imageErrors, setImageErrors] = useState<Record<string, boolean>>({});
+    const [loadedImages, setLoadedImages] = useState<Record<string, boolean>>({});
+
     const handleImageError = (itemId: string) => {
         setImageErrors((prev) => ({ ...prev, [itemId]: true }));
+    };
+
+    const handleImageLoad = (itemId: string) => {
+        setLoadedImages((prev) => ({ ...prev, [itemId]: true }));
     };
 
     return (
@@ -67,51 +74,64 @@ export function BaseContinueRow({
                                               {imageErrors[item.Id!] ? (
                                                   <div className="w-full h-full bg-muted flex items-center justify-center rounded-md">
                                                       <ImageOff className="w-12 h-12 text-muted-foreground" />
+                                                      <div className="absolute inset-0 rounded-md pointer-events-none poster-card-outline z-20" />
                                                   </div>
                                               ) : (
-                                                  <img
-                                                      src={
-                                                          item.SeriesId
-                                                              ? getPrimaryImageUrl(
-                                                                    item.Id!,
-                                                                    {
-                                                                        width: 416,
-                                                                    },
-                                                                    item.ImageTags?.Primary
-                                                                )
-                                                              : getThumbUrl(
-                                                                    item.Id!,
-                                                                    {
-                                                                        width: 416,
-                                                                    },
-                                                                    item.ImageTags?.Thumb
-                                                                )
-                                                      }
-                                                      alt={item.Name || t('no_title')}
-                                                      className="w-full h-full object-cover rounded-md group-hover:opacity-75 transition-all group-hover:scale-105"
-                                                      onError={() => handleImageError(item.Id!)}
-                                                  />
+                                                  <>
+                                                      <img
+                                                          src={
+                                                              item.SeriesId
+                                                                  ? getPrimaryImageUrl(
+                                                                        item.Id!,
+                                                                        {
+                                                                            width: 416,
+                                                                        },
+                                                                        item.ImageTags?.Primary
+                                                                    )
+                                                                  : getThumbUrl(
+                                                                        item.Id!,
+                                                                        {
+                                                                            width: 416,
+                                                                        },
+                                                                        item.ImageTags?.Thumb
+                                                                    )
+                                                          }
+                                                          alt={item.Name || t('no_title')}
+                                                          className={cn(
+                                                              'w-full h-full object-cover rounded-md transform-gpu will-change-transform z-10 poster-image',
+                                                              loadedImages[item.Id!]
+                                                                  ? 'blur-0 opacity-100 scale-100'
+                                                                  : 'blur-md opacity-40 scale-95',
+                                                              loadedImages[item.Id!] &&
+                                                                  'group-hover:opacity-90 group-hover:scale-105'
+                                                          )}
+                                                          onLoad={() => handleImageLoad(item.Id!)}
+                                                          onError={() => handleImageError(item.Id!)}
+                                                      />
+                                                      <Skeleton className="absolute bottom-0 left-0 right-0 top-0 -z-1" />
+                                                      <div className="absolute inset-0 rounded-md pointer-events-none poster-card-outline z-20" />
+                                                  </>
                                               )}
                                               {progress > 0 && (
-                                                  <div className="absolute bottom-0 left-0 right-0 h-1 bg-gray-700">
+                                                  <div className="absolute bottom-0 left-0 right-0 h-1 bg-black/60 rounded-b-md overflow-hidden z-15">
                                                       <div
                                                           style={{ width: `${progress}%` }}
-                                                          className="h-full bg-brand transition-width"
+                                                          className="h-full bg-white/70 transition-width"
                                                       />
                                                   </div>
                                               )}
-                                              <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                                                  <div
-                                                      className="bg-black/60 rounded-full p-4 cursor-pointer hover:bg-black/75"
-                                                      role="button"
-                                                      onClick={(e) => {
-                                                          e.preventDefault();
-                                                          navigate(`/play/${item.Id}`);
-                                                      }}
-                                                  >
-                                                      <Play className="w-6 h-6 text-white fill-white" />
-                                                  </div>
-                                              </div>
+                                               <div className="absolute bottom-2 left-2 opacity-0 group-hover:opacity-100 transition-opacity duration-150 z-30">
+                                                   <div
+                                                       className="flex items-center justify-center backdrop-blur-md bg-black/40 border border-white/15 rounded-full w-9 h-9 cursor-pointer hover:bg-black/60"
+                                                       role="button"
+                                                       onClick={(e) => {
+                                                           e.preventDefault();
+                                                           navigate(`/play/${item.Id}`);
+                                                       }}
+                                                   >
+                                                       <Play className="w-4 h-4 text-white fill-white translate-x-px" />
+                                                   </div>
+                                               </div>
                                           </div>
                                           <p className="mt-2 text-sm line-clamp-1 text-ellipsis break-all">
                                               {getTitleLineText(item, titleLine, t)}

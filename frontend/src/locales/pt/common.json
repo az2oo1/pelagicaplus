@@ -1,4 +1,6 @@
 {
   "previous": "Anterior",
-  "next": "Próximo"
+  "next": "Próximo",
+  "movie": "Filme",
+  "tv_show": "Série"
 }

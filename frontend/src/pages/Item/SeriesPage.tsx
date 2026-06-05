@@ -41,6 +41,8 @@ const SeriesPage = ({ item, config }: SeriesPageProps) => {
     const [selectedSeason, setSelectedSeason] = useState<string | null>(null);
     const { data: seasons, isLoading, error } = useSeasons(item.Id || '');
     const [posterFailed, setPosterFailed] = useState(false);
+    const [isPosterLoaded, setIsPosterLoaded] = useState(false);
+
     const { data: upcomingEpisodes } = useUpcomingEpisodes(item.Id || '');
     console.log('Upcoming Episodes:', upcomingEpisodes);
 
@@ -76,6 +78,7 @@ const SeriesPage = ({ item, config }: SeriesPageProps) => {
                 <div className="relative w-60 min-w-60 h-90 sm:w-72 sm:min-w-72 sm:h-108 hidden sm:block">
                     {!posterFailed ? (
                         <>
+                            <Skeleton className="absolute inset-0 w-full h-full rounded-md" />
                             <img
                                 src={getPrimaryImageUrl(
                                     item.Id || '',
@@ -83,10 +86,14 @@ const SeriesPage = ({ item, config }: SeriesPageProps) => {
                                     item.ImageTags?.Primary
                                 )}
                                 alt={item.Name + ' Primary'}
-                                className="object-cover rounded-md w-full h-full"
+                                className={[
+                                    'object-cover rounded-md w-full h-full relative z-10',
+                                    'transition-[filter,opacity] duration-700 ease-out',
+                                    isPosterLoaded ? 'blur-0 opacity-100' : 'blur-md opacity-0',
+                                ].join(' ')}
+                                onLoad={() => setIsPosterLoaded(true)}
                                 onError={() => setPosterFailed(true)}
                             />
-                            <Skeleton className="absolute inset-0 w-full h-full rounded-md -z-1" />
                         </>
                     ) : (
                         <div className="flex items-center justify-center w-full h-full bg-muted rounded-md">
@@ -160,7 +167,7 @@ const SeriesPage = ({ item, config }: SeriesPageProps) => {
                     <DescriptionItem
                         label={t('studios')}
                         items={studios.map((studio) => ({
-                            link: `/item/${studio.Id}`,
+                            link: studio.Id ? `/studio/${studio.Id}?name=${encodeURIComponent(studio.Name ?? '')}` : null,
                             name: studio.Name!,
                         }))}
                     />

@@ -20,6 +20,7 @@ import { TrailerButton } from '../../components/TrailerButton';
 import ItemDownloadButton from '../../components/ItemDownloadButton';
 import SourcePickerButton from '@/components/SourcePickerButton';
 
+
 interface MoviePageProps {
     item: BaseItemDto;
     config: AppConfig;
@@ -28,6 +29,8 @@ interface MoviePageProps {
 const MoviePage = ({ item, config }: MoviePageProps) => {
     const { t } = useTranslation('item');
     const [postersFailed, setPostersFailed] = useState(false);
+    const [isPosterLoaded, setIsPosterLoaded] = useState(false);
+
 
     const writers =
         item.People?.filter((person) => person.Type === 'Writer').filter((person) => person.Name) ||
@@ -49,6 +52,7 @@ const MoviePage = ({ item, config }: MoviePageProps) => {
             <div className="flex flex-col md:flex-row gap-6 max-w-7xl">
                 {!postersFailed ? (
                     <div className="relative w-60 min-w-60 h-90 sm:w-72 sm:min-w-72 sm:h-108 hidden sm:block">
+                        <Skeleton className="absolute inset-0 w-full h-full rounded-md" />
                         <img
                             src={getPrimaryImageUrl(
                                 item.Id || '',
@@ -56,10 +60,14 @@ const MoviePage = ({ item, config }: MoviePageProps) => {
                                 item.ImageTags?.Primary
                             )}
                             alt={item.Name + ' Primary'}
-                            className="object-cover rounded-md w-full h-full"
+                            className={[
+                                'object-cover rounded-md w-full h-full relative z-10',
+                                'transition-[filter,opacity] duration-700 ease-out',
+                                isPosterLoaded ? 'blur-0 opacity-100' : 'blur-md opacity-0',
+                            ].join(' ')}
+                            onLoad={() => setIsPosterLoaded(true)}
                             onError={() => setPostersFailed(true)}
                         />
-                        <Skeleton className="absolute inset-0 w-full h-full rounded-md -z-1" />
                     </div>
                 ) : (
                     <div className="w-60 min-w-60 h-90 sm:w-72 sm:min-w-72 sm:h-108 rounded-md bg-muted flex items-center justify-center">
@@ -123,7 +131,7 @@ const MoviePage = ({ item, config }: MoviePageProps) => {
                     <DescriptionItem
                         label={t('studios')}
                         items={studios.map((studio) => ({
-                            link: `/item/${studio.Id}`,
+                            link: studio.Id ? `/studio/${studio.Id}?name=${encodeURIComponent(studio.Name ?? '')}` : null,
                             name: studio.Name!,
                         }))}
                     />

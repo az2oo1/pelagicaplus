@@ -111,7 +111,7 @@ const MusicPlayerBar = () => {
                 >
                     <div className="flex items-center gap-2 flex-1 min-w-0">
                         <img
-                            src={getPrimaryImageUrl(currentTrack.id, {
+                            src={getPrimaryImageUrl(currentTrack.albumId || currentTrack.id, {
                                 width: 64,
                                 height: 64,
                             })}
@@ -162,7 +162,7 @@ const MusicPlayerBar = () => {
                         <>
                             <div className="flex flex-1 flex-col items-center justify-center gap-6">
                                 <img
-                                    src={getPrimaryImageUrl(currentTrack.id, {
+                                    src={getPrimaryImageUrl(currentTrack.albumId || currentTrack.id, {
                                         width: 400,
                                         height: 400,
                                     })}
@@ -265,7 +265,7 @@ const MusicPlayerBar = () => {
                 <div className="relative z-10 flex w-full items-center justify-between rounded-lg border border-sidebar-border bg-sidebar/90 p-3 shadow-sm backdrop-blur-lg">
                     <div className="flex flex-1 items-center gap-2">
                         <img
-                            src={getPrimaryImageUrl(currentTrack.id, {
+                            src={getPrimaryImageUrl(currentTrack.albumId || currentTrack.id, {
                                 width: 64,
                                 height: 64,
                             })}

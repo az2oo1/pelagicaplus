@@ -2,6 +2,7 @@ import { getApi } from '@/api/getApi';
 import type { BaseItemDto, ItemSortBy, SortOrder } from '@jellyfin/sdk/lib/generated-client/models';
 import { getItemsApi } from '@jellyfin/sdk/lib/utils/api/items-api';
 import { useQuery } from '@tanstack/react-query';
+import { getUserId } from '@/utils/localstorageCredentials';
 
 interface GenreItemsOptions {
     sortBy?: ItemSortBy[];
@@ -23,6 +24,7 @@ export function useGenreItems(genreId: string, options?: GenreItemsOptions) {
             const itemsApi = getItemsApi(api);
 
             const itemsResponse = await itemsApi.getItems({
+                userId: getUserId() || undefined,
                 genreIds: [genreId],
                 includeItemTypes: ['Movie', 'Series'],
                 recursive: true,

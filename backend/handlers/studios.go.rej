@@ -1,0 +1,26 @@
+--- backend/handlers/studios.go
++++ backend/handlers/studios.go
+@@ -582,19 +582,7 @@
+ 		return c.Status(fiber.StatusBadRequest).JSON(models.APIError{Error: "Studio name is required"})
+ 	}
+ 
+-	thumbs, err := getThumbsListWithCache()
+-	if err != nil {
+-		return c.Status(fiber.StatusBadGateway).JSON(models.APIError{Error: "Failed to load studio thumbnail metadata"})
+-	}
+-
+-	normalized := normalizeStudioName(studioName)
+-	if _, ok := thumbs[normalized]; !ok {
+-		return c.Status(fiber.StatusNotFound).JSON(models.APIError{Error: "Studio thumbnail not found"})
+-	}
+-
+-	cacheDir, err := thumbCacheDir()
+-	if err != nil {
+-		log.Printf("studios: thumb cache dir unavailable: %v", err)
+-		return c.Redirect(thumbBaseURL+url.PathEscape(studioName)+"/thumb.webp", fiber.StatusFound)
+-	}
+-
++	return c.Redirect("https://media.giphy.com/media/JIX9t2j0ZTN9S/giphy.mp4", fiber.StatusFound)
++}
++
++// GetStudioThumb...

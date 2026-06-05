@@ -314,7 +314,7 @@ const UserMenu = () => {
         .toUpperCase();
 
     return (
-        <DropdownMenu>
+        <DropdownMenu modal={false}>
             <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="flex items-center gap-2 px-2 h-9">
                     <Avatar className="h-7 w-7 rounded-lg">
@@ -526,26 +526,14 @@ const UserMenu = () => {
     );
 };
 
-const TopBar = ({ overlay = false }: { overlay?: boolean }) => {
+const TopBar = (_props: { overlay?: boolean }) => {
+    void _props;
     const { t } = useTranslation('sidebar');
     const { config } = useConfig();
     const { data: views } = useUserViews();
     const { theme } = useTheme();
     const effectiveTheme = getEffectiveTheme(theme);
     const [mobileOpen, setMobileOpen] = useState(false);
-    const [scrolled, setScrolled] = useState(false);
-
-    useEffect(() => {
-        const handleScroll = () => {
-            setScrolled(window.scrollY > 20);
-        };
-
-        handleScroll();
-
-        window.addEventListener('scroll', handleScroll);
-
-        return () => window.removeEventListener('scroll', handleScroll);
-    }, []);
 
     const defaultLogo = effectiveTheme === 'dark' ? '/logo.svg' : '/logo-dark.svg';
     const configuredLogo =
@@ -561,18 +549,7 @@ const TopBar = ({ overlay = false }: { overlay?: boolean }) => {
 
     return (
         <header className="fixed top-0 z-50 w-full">
-            {overlay && !scrolled && (
-                <div className="absolute inset-0 -bottom-5 bg-linear-to-b from-background/70 to-transparent pointer-events-none" />
-            )}
-
-            <div
-                className={cn(
-                    'relative flex h-14 items-center gap-2 px-4 sm:px-12 transition-all duration-300 border-b',
-                    !overlay || scrolled
-                        ? 'border-border bg-background/60 backdrop-blur'
-                        : 'border-transparent'
-                )}
-            >
+            <div className="relative flex h-14 items-center gap-2 px-4 sm:px-12 transition-all duration-300 border-b border-border bg-background/60 backdrop-blur">
                 {/* Logo */}
                 <Link to="/" className="flex items-center gap-2 shrink-0 mr-2">
                     <Avatar className="h-7 w-7 p-0.5 rounded-md">

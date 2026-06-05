@@ -35,7 +35,7 @@ const ItemAdminButton = ({
 
     return (
         <>
-            <DropdownMenu>
+            <DropdownMenu modal={false}>
                 <DropdownMenuTrigger asChild>
                     <Button variant={'outline'} size={'icon'}>
                         <EllipsisVertical />

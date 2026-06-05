@@ -15,6 +15,7 @@ import { getLastAudioLanguage, getLastSubtitleLanguage } from '@/utils/localstor
 import { useUserConfiguration } from '@/hooks/api/playbackPreferences/useUserConfiguration';
 import { usePlayerItem } from '@/hooks/api/usePlayerItem';
 import { useMusicPlayback } from '@/hooks/useMusicPlayback';
+import { Loader2 } from 'lucide-react';
 
 const PLAYBACK_PROGRESS_REPORT_MIN_PLAYTIME_SECONDS = 5;
 const PLAYBACK_PROGRESS_REPORT_INTERVAL_MS = 5000;
@@ -280,7 +281,14 @@ const PlayerPage = () => {
         isLoadingAdjacentItems ||
         isLoadingUserConfiguration
     ) {
-        return <p>Loading...</p>;
+        return (
+            <div className="w-full h-screen bg-black flex flex-col items-center justify-center gap-3">
+                <Loader2 className="w-10 h-10 animate-spin text-brand animate-duration-1500" />
+                <span className="text-xs text-zinc-400 font-semibold tracking-wider uppercase select-none">
+                    Loading media...
+                </span>
+            </div>
+        );
     }
 
     if (error || mediaSegmentsError || adjacentItemsError || userConfigurationError) {

@@ -14,7 +14,6 @@ import BoxSetPage from './BoxSetPage';
 import MusicAlbumPage from './MusicAlbumPage';
 import PlaylistPage from './PlaylistPage';
 import GenrePage from './GenrePage';
-import StudioPage from './StudioPage';
 import type { BaseItemKind } from '@jellyfin/sdk/lib/generated-client/models';
 import MusicArtistPage from './MusicArtistPage';
 
@@ -149,8 +148,6 @@ const ItemPage = () => {
                             return <GenrePage item={item} />;
                         case 'MusicArtist':
                             return <MusicArtistPage item={item} config={config} />;
-                        case 'Studio':
-                            return <StudioPage item={item} />;
                         default:
                             return (
                                 <p>

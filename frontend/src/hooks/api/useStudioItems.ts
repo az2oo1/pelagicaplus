@@ -2,6 +2,7 @@ import { getApi } from '@/api/getApi';
 import type { BaseItemDto, ItemSortBy, SortOrder } from '@jellyfin/sdk/lib/generated-client/models';
 import { getItemsApi } from '@jellyfin/sdk/lib/utils/api/items-api';
 import { useQuery } from '@tanstack/react-query';
+import { getUserId } from '@/utils/localstorageCredentials';
 
 interface StudioItemsOptions {
     sortBy?: ItemSortBy[];
@@ -22,8 +23,12 @@ export function useStudioItems(studioId: string, options?: StudioItemsOptions) {
             const api = getApi();
             const itemsApi = getItemsApi(api);
 
+            const searchParams = new URLSearchParams(window.location.search);
+            const studioName = searchParams.get('name');
+
             const itemsResponse = await itemsApi.getItems({
-                studioIds: [studioId],
+                userId: getUserId() || undefined,
+                ...(studioName ? { studios: [studioName] } : { studioIds: [studioId] }),
                 includeItemTypes: ['Movie', 'Series'],
                 recursive: true,
                 excludeItemTypes: ['CollectionFolder'],

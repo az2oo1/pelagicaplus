@@ -4,12 +4,47 @@ import { Skeleton } from '@/components/ui/skeleton';
 import type { EpisodeDisplay } from '@/hooks/api/useConfig';
 import { useEpisodes } from '@/hooks/api/useEpisodes';
 import { getPrimaryImageUrl, getThumbUrl } from '@/utils/jellyfinUrls';
-import { ticksToReadableTime } from '@/utils/timeConversion';
 import type { BaseItemDto } from '@jellyfin/sdk/lib/generated-client/models';
 import { ImageOff, Play, Star } from 'lucide-react';
 import { memo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useNavigate } from 'react-router';
+import { cn } from '@/lib/utils';
+
+/**
+ * Inner image block with blur-in loading state — mirrors the BaseContinueRow card model.
+ */
+const EpisodeCardImage = memo(
+    ({ episode, onError }: { episode: BaseItemDto; onError: () => void }) => {
+        const [isLoaded, setIsLoaded] = useState(false);
+
+        return (
+            <>
+                <img
+                    src={
+                        episode.SeriesId
+                            ? getPrimaryImageUrl(episode.Id!, { width: 416 })
+                            : getThumbUrl(episode.Id!, { width: 416 })
+                    }
+                    alt={episode.Name || ''}
+                    className={cn(
+                        'w-full h-full object-cover rounded-md transform-gpu will-change-transform z-10 poster-image',
+                        isLoaded
+                            ? 'blur-0 opacity-100 scale-100'
+                            : 'blur-md opacity-40 scale-95',
+                        isLoaded && 'group-hover:opacity-90 group-hover:scale-105'
+                    )}
+                    onLoad={() => setIsLoaded(true)}
+                    onError={onError}
+                />
+                <Skeleton className="absolute bottom-0 left-0 right-0 top-0 -z-1" />
+                <div className="absolute inset-0 rounded-md pointer-events-none poster-card-outline z-20" />
+            </>
+        );
+    }
+);
+
+EpisodeCardImage.displayName = 'EpisodeCardImage';
 
 const EpisodeComponent = memo(
     ({
@@ -34,56 +69,42 @@ const EpisodeComponent = memo(
                   : 0;
 
         return (
-            <Link to={`/item/${episode.Id}`} key={episode.Id} className={'group ' + className}>
+            <Link to={`/item/${episode.Id}`} key={episode.Id} className={'group ' + (className ?? '')}>
                 <div className="relative w-full aspect-video rounded-md overflow-hidden">
                     {imageError ? (
                         <div className="w-full h-full bg-muted flex items-center justify-center rounded-md">
                             <ImageOff className="w-12 h-12 text-muted-foreground" />
+                            <div className="absolute inset-0 rounded-md pointer-events-none poster-card-outline z-20" />
                         </div>
                     ) : (
-                        <div className="relative">
-                            <img
-                                src={
-                                    episode.SeriesId
-                                        ? getPrimaryImageUrl(episode.Id!, {
-                                              width: 416,
-                                          })
-                                        : getThumbUrl(episode.Id!, {
-                                              width: 416,
-                                          })
-                                }
-                                alt={episode.Name || t('no_title')}
-                                className="w-full h-full object-cover rounded-md group-hover:opacity-75 group-hover:scale-105 transition-opacity transition-transform duration-300 ease-out will-change-transform"
-                                onError={() => setImageError(true)}
-                            />
-                            <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                                <div
-                                    className="bg-black/60 rounded-full p-4 cursor-pointer hover:bg-black/75"
-                                    role="button"
-                                    onClick={(e) => {
-                                        e.preventDefault();
-                                        navigate(`/play/${episode.Id}`);
-                                    }}
-                                >
-                                    <Play className="w-6 h-6 text-white fill-white" />
-                                </div>
-                            </div>
-                            {episode.RunTimeTicks && (
-                                <Badge className="absolute top-2 right-2 bg-black/70 text-white">
-                                    {ticksToReadableTime(episode.RunTimeTicks)}
-                                </Badge>
-                            )}
-                        </div>
+                        <EpisodeCardImage episode={episode} onError={() => setImageError(true)} />
                     )}
+
+                    {/* Progress bar */}
                     {progress > 0 && (
-                        <div className="absolute bottom-0 left-0 right-0 h-1 bg-gray-700">
+                        <div className="absolute bottom-0 left-0 right-0 h-1 bg-black/60 rounded-b-md overflow-hidden z-25">
                             <div
                                 style={{ width: `${progress}%` }}
-                                className="h-full bg-brand transition-width"
+                                className="h-full bg-white/70 transition-width"
                             />
                         </div>
                     )}
+
+                    {/* Hover play button */}
+                    <div className="absolute bottom-2 left-2 opacity-0 group-hover:opacity-100 transition-opacity duration-150 z-30">
+                        <div
+                            className="flex items-center justify-center backdrop-blur-md bg-black/40 border border-white/15 rounded-full w-9 h-9 cursor-pointer hover:bg-black/60"
+                            role="button"
+                            onClick={(e) => {
+                                e.preventDefault();
+                                navigate(`/play/${episode.Id}`);
+                            }}
+                        >
+                            <Play className="w-4 h-4 text-white fill-white translate-x-px" />
+                        </div>
+                    </div>
                 </div>
+
                 <p className="mt-2 text-md line-clamp-1 text-ellipsis break-all">
                     {episode.Name || t('no_title')}
                 </p>

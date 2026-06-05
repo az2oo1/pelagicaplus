@@ -1,6 +1,7 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import videojs from 'video.js';
 import 'video.js/dist/video-js.css';
+import { Loader2 } from 'lucide-react';
 
 type VideoJsPlayer = ReturnType<typeof videojs>;
 
@@ -33,6 +34,13 @@ const VideoPlayer = ({
     const videoRef = useRef<HTMLVideoElement | null>(null);
     const playerRef = useRef<VideoJsPlayer | null>(null);
     const hasSeekedRef = useRef(false);
+    const [isBuffering, setIsBuffering] = useState(true);
+    const [prevSrc, setPrevSrc] = useState(src);
+
+    if (src !== prevSrc) {
+        setPrevSrc(src);
+        setIsBuffering(true);
+    }
 
     useEffect(() => {
         if (!videoRef.current) return;
@@ -44,14 +52,32 @@ const VideoPlayer = ({
             poster: poster,
             responsive: false,
             fluid: false,
+            controlBar: false,
+            bigPlayButton: false,
+            loadingSpinner: false,
+            errorDisplay: false,
             html5: {
-                nativeControlsForTouch: true,
+                nativeControlsForTouch: false,
                 hls: { overrideNative: true },
-                nativeTextTracks: false, // Force video.js to render text tracks
+                nativeTextTracks: false,
             },
         });
 
         playerRef.current = player;
+
+        const handleWaiting = () => setIsBuffering(true);
+        const handlePlaying = () => setIsBuffering(false);
+        const handleSeeking = () => setIsBuffering(true);
+        const handleSeeked = () => setIsBuffering(false);
+        const handleCanPlay = () => setIsBuffering(false);
+        const handleLoadStart = () => setIsBuffering(true);
+
+        player.on('waiting', handleWaiting);
+        player.on('playing', handlePlaying);
+        player.on('seeking', handleSeeking);
+        player.on('seeked', handleSeeked);
+        player.on('canplay', handleCanPlay);
+        player.on('loadstart', handleLoadStart);
 
         player.ready(() => {
             onReady?.(player);
@@ -62,7 +88,14 @@ const VideoPlayer = ({
 
         return () => {
             if (playerRef.current) {
-                playerRef.current.dispose();
+                const p = playerRef.current;
+                p.off('waiting', handleWaiting);
+                p.off('playing', handlePlaying);
+                p.off('seeking', handleSeeking);
+                p.off('seeked', handleSeeked);
+                p.off('canplay', handleCanPlay);
+                p.off('loadstart', handleLoadStart);
+                p.dispose();
                 playerRef.current = null;
             }
         };
@@ -155,17 +188,27 @@ const VideoPlayer = ({
 
     return (
         <div
-            className="w-full h-full overflow-hidden"
+            className="w-full h-full overflow-hidden relative"
             style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}
         >
             <video
                 ref={videoRef}
-                className="video-js vjs-default-skin"
+                className="video-js"
                 data-testid="video-player"
                 style={{ maxWidth: '100%', maxHeight: '100%', width: '100%', height: '100%' }}
             >
                 <track kind="captions" srcLang="en" label="English" />
             </video>
+            {isBuffering && (
+                <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/40 backdrop-blur-[2px] transition-opacity duration-300">
+                    <div className="flex flex-col items-center gap-3">
+                        <Loader2 className="w-10 h-10 animate-spin text-brand" />
+                        <span className="text-xs text-zinc-300 font-semibold tracking-wider uppercase select-none drop-shadow-md">
+                            Loading...
+                        </span>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

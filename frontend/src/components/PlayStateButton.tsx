@@ -4,6 +4,7 @@ import { useMarkItemPlayed } from '@/hooks/api/playState/useMarkItemPlayed';
 import { useMarkItemUnplayed } from '@/hooks/api/playState/useMarkItemUnplayed';
 import { Circle, CircleCheck } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { cn } from '@/lib/utils';
 
 interface PlayStateButtonProps {
     itemId: string;
@@ -40,8 +41,17 @@ const PlayStateButton = ({ itemId, userId, size, variant }: PlayStateButtonProps
             size={size || 'icon'}
             onClick={togglePlayState}
             title={playState?.played ? t('mark_as_unplayed') : t('mark_as_played')}
+            className="hover:scale-105 active:scale-95 transition-transform duration-200 ease-out"
         >
-            {playState?.played ? <CircleCheck /> : <Circle />}
+            <span
+                key={playState?.played ? 'played' : 'unplayed'}
+                className={cn(
+                    'flex items-center justify-center transition-colors duration-200',
+                    playState?.played && 'animate-pop-in text-green-500'
+                )}
+            >
+                {playState?.played ? <CircleCheck className="fill-green-500/10" /> : <Circle />}
+            </span>
         </Button>
     );
 };
