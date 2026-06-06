@@ -15,7 +15,9 @@ import { getLastAudioLanguage, getLastSubtitleLanguage } from '@/utils/localstor
 import { useUserConfiguration } from '@/hooks/api/playbackPreferences/useUserConfiguration';
 import { usePlayerItem } from '@/hooks/api/usePlayerItem';
 import { useMusicPlayback } from '@/hooks/useMusicPlayback';
+import { useConfig } from '@/hooks/api/useConfig';
 import { Loader2 } from 'lucide-react';
+import ContentAdvisoryOverlay from './ContentAdvisoryOverlay';
 
 const PLAYBACK_PROGRESS_REPORT_MIN_PLAYTIME_SECONDS = 5;
 const PLAYBACK_PROGRESS_REPORT_INTERVAL_MS = 5000;
@@ -34,6 +36,7 @@ const PlayerPage = () => {
         error: userConfigurationError,
     } = useUserConfiguration(getUserId());
     const { data: item, isLoading, error } = usePlayerItem(itemId, true);
+    const { config } = useConfig();
 
     const resolvedAudio = useMemo(() => {
         if (!item || !userConfiguration) {
@@ -82,6 +85,23 @@ const PlayerPage = () => {
     const [subtitleTrackIndex, setSubtitleTrackIndex] = useState<number | null>(
         resolvedSubtitleTrackIndex
     );
+    const [subtitleSize, setSubtitleSize] = useState<number>(() => {
+        const saved = localStorage.getItem('playerSubtitleSize');
+        return saved ? parseInt(saved, 10) : 100;
+    });
+    const [subtitleOffset, setSubtitleOffset] = useState<number>(() => {
+        const saved = localStorage.getItem('playerSubtitleTimeOffset');
+        return saved ? parseFloat(saved) : 0;
+    });
+
+    useEffect(() => {
+        localStorage.setItem('playerSubtitleSize', subtitleSize.toString());
+    }, [subtitleSize]);
+
+    useEffect(() => {
+        localStorage.setItem('playerSubtitleTimeOffset', subtitleOffset.toString());
+    }, [subtitleOffset]);
+
     const containerRef = useRef<HTMLDivElement>(null);
     const progressReportingIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
     const lastPositionRef = useRef<number>(0);
@@ -282,11 +302,8 @@ const PlayerPage = () => {
         isLoadingUserConfiguration
     ) {
         return (
-            <div className="w-full h-screen bg-black flex flex-col items-center justify-center gap-3">
-                <Loader2 className="w-10 h-10 animate-spin text-brand animate-duration-1500" />
-                <span className="text-xs text-zinc-400 font-semibold tracking-wider uppercase select-none">
-                    Loading media...
-                </span>
+            <div className="w-full h-screen bg-black flex flex-col items-center justify-center">
+                <Loader2 className="w-10 h-10 animate-spin text-white animate-duration-1500" />
             </div>
         );
     }
@@ -308,7 +325,16 @@ const PlayerPage = () => {
     }
 
     return (
-        <div ref={containerRef} className="relative w-full h-screen bg-black flex overflow-hidden">
+        <div
+            ref={containerRef}
+            className="relative w-full h-screen bg-black flex overflow-hidden"
+            style={{
+                '--subtitle-size': `${subtitleSize}%`,
+            } as React.CSSProperties}
+        >
+            {config.showContentAdvisory !== false && (
+                <ContentAdvisoryOverlay item={item} player={player} />
+            )}
             <VideoPlayer
                 key={itemId}
                 src={getVideoStreamUrl(itemId!, {
@@ -321,6 +347,7 @@ const PlayerPage = () => {
                 subtitles={subtitleTracks}
                 isAudioSwitchRef={isAudioSwitchRef}
                 subtitleTrackIndex={subtitleTrackIndex}
+                subtitleOffset={subtitleOffset}
             />
             <PlayerControls
                 item={item}
@@ -329,6 +356,10 @@ const PlayerPage = () => {
                 onAudioTrackChange={handleAudioTrackChange}
                 subtitleTrackIndex={subtitleTrackIndex}
                 onSubtitleTrackChange={handleSubtitleTrackChange}
+                subtitleSize={subtitleSize}
+                setSubtitleSize={setSubtitleSize}
+                subtitleOffset={subtitleOffset}
+                setSubtitleOffset={setSubtitleOffset}
                 isFullscreen={isFullscreen}
                 onFullscreenToggle={handleToggleFullscreen}
                 mediaSegments={mediaSegments}

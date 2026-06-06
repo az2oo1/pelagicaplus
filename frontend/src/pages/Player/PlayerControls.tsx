@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import { Button } from '../../components/ui/button';
 import { Link, useNavigate } from 'react-router';
+import { Badge } from '@/components/ui/badge';
 import type {
     BaseItemDto,
     MediaSegmentDto,
@@ -33,14 +34,15 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { formatPlayTime, ticksToReadableTime, ticksToSeconds } from '@/utils/timeConversion';
+import { formatPlayTime, ticksToReadableTime, ticksToSeconds, getEndsAt } from '@/utils/timeConversion';
 import { useTranslation } from 'react-i18next';
 import { usePlayerKeyboardControls } from '@/hooks/usePlayerKeyboardControls';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { getPrimaryImageUrl, getTrickplayImageUrl } from '@/utils/jellyfinUrls';
+import { getPrimaryImageUrl, getTrickplayImageUrl, getLogoUrl, getItemImageUrl } from '@/utils/jellyfinUrls';
 import { useReportPlaybackProgress } from '@/hooks/api/usePlaybackProgress';
 import { getRuntimePlaybackStats, type RuntimePlaybackStats } from '@/utils/playbackStats';
 import { useSession } from '@/hooks/api/useSession';
+import { useConfig } from '@/hooks/api/useConfig';
 import {
     removeLastSubtitleLanguage,
     setLastAudioLanguage,
@@ -90,6 +92,14 @@ function getTrickplayTile(time: number, trickplay: TrickplayInfoDto) {
     };
 }
 
+function getCleanRating(rating?: string) {
+    if (!rating) return '';
+    const colonParts = rating.split(':');
+    let clean = colonParts[colonParts.length - 1].trim();
+    clean = clean.replace(/^(US|us)-/, '');
+    return clean.toUpperCase();
+}
+
 interface PlayerControlsProps {
     item: BaseItemDto;
     player: ReturnType<typeof import('video.js').default> | null;
@@ -97,6 +107,10 @@ interface PlayerControlsProps {
     onAudioTrackChange: (index: number) => void;
     subtitleTrackIndex: number | null;
     onSubtitleTrackChange: (index: number | null) => void;
+    subtitleSize: number;
+    setSubtitleSize: React.Dispatch<React.SetStateAction<number>>;
+    subtitleOffset: number;
+    setSubtitleOffset: React.Dispatch<React.SetStateAction<number>>;
     isFullscreen: boolean;
     onFullscreenToggle?: () => void;
     mediaSegments?: MediaSegmentDto[];
@@ -113,6 +127,10 @@ const PlayerControls = ({
     onAudioTrackChange,
     subtitleTrackIndex,
     onSubtitleTrackChange,
+    subtitleSize,
+    setSubtitleSize,
+    subtitleOffset,
+    setSubtitleOffset,
     isFullscreen,
     onFullscreenToggle,
     mediaSegments,
@@ -124,6 +142,9 @@ const PlayerControls = ({
     const { t } = useTranslation('player');
     const [isPlaying, setIsPlaying] = useState(false);
     const [currentTime, setCurrentTime] = useState(0);
+    const [failedLogo, setFailedLogo] = useState(false);
+    const [discImageFailed, setDiscImageFailed] = useState(false);
+    const [showPauseOverlay, setShowPauseOverlay] = useState(false);
     const [duration, setDuration] = useState(0);
     const [bufferedTime, setBufferedTime] = useState(0);
     const [volume, setVolume] = useState(() => {
@@ -137,6 +158,7 @@ const PlayerControls = ({
     const [isPiP, setIsPiP] = useState(false);
     const progressRef = useRef<HTMLDivElement>(null);
     const hideTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const pauseTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     const navigate = useNavigate();
     const { reportProgress } = useReportPlaybackProgress();
     const [dismissedNextItemPrompt, setDismissedNextItemPrompt] = useState(false);
@@ -144,6 +166,7 @@ const PlayerControls = ({
     const [showStats, setShowStats] = useState(false);
     const [container, setContainer] = useState<HTMLElement | null>(null);
     const { data: session } = useSession(item.Id, showStats);
+    const { config } = useConfig();
 
     useEffect(() => {
         setContainer(containerRef.current);
@@ -158,6 +181,59 @@ const PlayerControls = ({
         return () => clearInterval(interval);
     }, [player, item, session, audioTrackIndex, srcUrl, showStats]);
 
+    const resetPauseTimer = useCallback(() => {
+        if (pauseTimerRef.current) {
+            clearTimeout(pauseTimerRef.current);
+        }
+        if (!isPlaying) {
+            setShowPauseOverlay(false);
+            pauseTimerRef.current = setTimeout(() => {
+                setShowPauseOverlay(true);
+            }, 15000);
+        }
+    }, [isPlaying]);
+
+    useEffect(() => {
+        if (config.showPauseOverlay === false) {
+            setShowPauseOverlay(false);
+            if (pauseTimerRef.current) {
+                clearTimeout(pauseTimerRef.current);
+                pauseTimerRef.current = null;
+            }
+            return;
+        }
+
+        if (isPlaying) {
+            setShowPauseOverlay(false);
+            if (pauseTimerRef.current) {
+                clearTimeout(pauseTimerRef.current);
+                pauseTimerRef.current = null;
+            }
+            return;
+        }
+
+        const handleActivity = () => {
+            resetPauseTimer();
+        };
+
+        window.addEventListener('mousemove', handleActivity);
+        window.addEventListener('keydown', handleActivity);
+        window.addEventListener('click', handleActivity);
+        window.addEventListener('touchstart', handleActivity);
+
+        resetPauseTimer();
+
+        return () => {
+            window.removeEventListener('mousemove', handleActivity);
+            window.removeEventListener('keydown', handleActivity);
+            window.removeEventListener('click', handleActivity);
+            window.removeEventListener('touchstart', handleActivity);
+            if (pauseTimerRef.current) {
+                clearTimeout(pauseTimerRef.current);
+            }
+        };
+    }, [isPlaying, resetPauseTimer, config.showPauseOverlay]);
+
     const resetHideTimeout = () => {
         setShowControls(true);
         if (hideTimeoutRef.current) {
@@ -170,6 +246,9 @@ const PlayerControls = ({
 
     const handleMouseMove = () => {
         resetHideTimeout();
+        if (!isPlaying) {
+            resetPauseTimer();
+        }
     };
 
     const handleMouseLeave = () => {
@@ -420,15 +499,19 @@ const PlayerControls = ({
             <div
                 className="absolute top-0 left-0 w-full p-4 bg-linear-to-b from-black/80 to-transparent z-20 text-gray-200 text-lg flex items-center gap-2 transition-opacity duration-300"
                 style={{
-                    opacity: showControls ? 1 : 0,
-                    pointerEvents: showControls ? 'auto' : 'none',
+                    opacity: showControls && !showPauseOverlay ? 1 : 0,
+                    pointerEvents: showControls && !showPauseOverlay ? 'auto' : 'none',
                 }}
                 onMouseMove={handleMouseMove}
             >
-                <Button variant="ghost" asChild>
-                    <Link to={`/item/${item.Id}`}>
-                        <ArrowLeft />
-                    </Link>
+                <Button variant="ghost" onClick={() => {
+                    if (window.history.state && window.history.state.idx > 0) {
+                        navigate(-1);
+                    } else {
+                        navigate(`/item/${item.Id}`, { replace: true });
+                    }
+                }}>
+                    <ArrowLeft />
                 </Button>
                 <h1>{title}</h1>
             </div>
@@ -638,8 +721,8 @@ const PlayerControls = ({
             <div
                 className="absolute bottom-0 left-0 right-0 z-20 bg-linear-to-t from-black/80 to-transparent p-4 transition-opacity duration-300"
                 style={{
-                    opacity: showControls ? 1 : 0,
-                    pointerEvents: showControls ? 'auto' : 'none',
+                    opacity: showControls && !showPauseOverlay ? 1 : 0,
+                    pointerEvents: showControls && !showPauseOverlay ? 'auto' : 'none',
                 }}
                 onMouseMove={handleMouseMove}
                 onMouseLeave={handleMouseLeave}
@@ -668,7 +751,7 @@ const PlayerControls = ({
                     />
                     {/* current progress */}
                     <div
-                        className="absolute top-1 left-0 h-1 bg-brand rounded pointer-events-none z-15"
+                        className="absolute top-1 left-0 h-1 bg-white rounded pointer-events-none z-15"
                         style={{ width: `${progressPercentage}%` }}
                     />
                     {/* Hover preview */}
@@ -788,7 +871,7 @@ const PlayerControls = ({
                                         <Subtitles />
                                     </Button>
                                 </DropdownMenuTrigger>
-                                <DropdownMenuContent container={container}>
+                                <DropdownMenuContent container={container} className="w-56">
                                     <DropdownMenuLabel>{t('subtitles')}</DropdownMenuLabel>
                                     <DropdownMenuSeparator />
                                     <DropdownMenuRadioGroup
@@ -809,6 +892,72 @@ const PlayerControls = ({
                                             </DropdownMenuRadioItem>
                                         ))}
                                     </DropdownMenuRadioGroup>
+
+                                    <DropdownMenuSeparator />
+                                    <DropdownMenuLabel>Subtitle Size</DropdownMenuLabel>
+                                    <div className="flex items-center justify-between px-3 py-1 text-xs">
+                                        <Button
+                                            variant="outline"
+                                            size="sm"
+                                            className="h-7 w-7 p-0 cursor-pointer bg-white/5 border-white/10 hover:bg-white/10 text-white"
+                                            onClick={(e) => {
+                                                e.preventDefault();
+                                                e.stopPropagation();
+                                                setSubtitleSize((prev) => Math.max(50, prev - 10));
+                                            }}
+                                        >
+                                            -
+                                        </Button>
+                                        <span className="font-mono text-white">{subtitleSize}%</span>
+                                        <Button
+                                            variant="outline"
+                                            size="sm"
+                                            className="h-7 w-7 p-0 cursor-pointer bg-white/5 border-white/10 hover:bg-white/10 text-white"
+                                            onClick={(e) => {
+                                                e.preventDefault();
+                                                e.stopPropagation();
+                                                setSubtitleSize((prev) => Math.min(250, prev + 10));
+                                            }}
+                                        >
+                                            +
+                                        </Button>
+                                    </div>
+
+                                    <DropdownMenuSeparator />
+                                    <DropdownMenuLabel>Subtitle Delay</DropdownMenuLabel>
+                                    <div className="flex items-center justify-between px-3 py-1 text-xs">
+                                        <Button
+                                            variant="outline"
+                                            size="sm"
+                                            className="h-7 w-7 p-0 cursor-pointer bg-white/5 border-white/10 hover:bg-white/10 text-white"
+                                            onClick={(e) => {
+                                                e.preventDefault();
+                                                e.stopPropagation();
+                                                setSubtitleOffset((prev) => Math.max(-10, parseFloat((prev - 0.5).toFixed(1))));
+                                            }}
+                                        >
+                                            -
+                                        </Button>
+                                        <span className="font-mono text-white">
+                                            {subtitleOffset === 0
+                                                ? '0.0s (Sync)'
+                                                : subtitleOffset > 0
+                                                  ? `+${subtitleOffset.toFixed(1)}s`
+                                                  : `${subtitleOffset.toFixed(1)}s`}
+                                        </span>
+                                        <Button
+                                            variant="outline"
+                                            size="sm"
+                                            className="h-7 w-7 p-0 cursor-pointer bg-white/5 border-white/10 hover:bg-white/10 text-white"
+                                            onClick={(e) => {
+                                                e.preventDefault();
+                                                e.stopPropagation();
+                                                setSubtitleOffset((prev) => Math.min(10, parseFloat((prev + 0.5).toFixed(1))));
+                                            }}
+                                        >
+                                            +
+                                        </Button>
+                                    </div>
                                 </DropdownMenuContent>
                             </DropdownMenu>
                         )}
@@ -857,7 +1006,7 @@ const PlayerControls = ({
                             step={0.1}
                             value={isMuted ? [0] : [volume]}
                             onValueChange={handleVolumeChange}
-                            className="w-25 cursor-pointer mr-2"
+                            className="w-25 cursor-pointer mr-2 [&>[data-slot=slider-range]]:bg-white [&>[data-slot=slider-thumb]]:border-white [&>[data-slot=slider-thumb]]:bg-white"
                         />
                         {document.pictureInPictureEnabled && (
                             <Button
@@ -869,7 +1018,7 @@ const PlayerControls = ({
                             >
                                 <PictureInPicture2
                                     size={20}
-                                    className={isPiP ? 'text-brand' : ''}
+                                    className={isPiP ? 'text-white' : ''}
                                 />
                             </Button>
                         )}
@@ -884,6 +1033,176 @@ const PlayerControls = ({
                     </div>
                 </div>
             </div>
+
+            {/* Pause Screen Overlay */}
+            {showPauseOverlay && (
+                <div
+                    className="absolute inset-0 bg-black/65 backdrop-blur-md z-45 flex flex-col justify-between p-8 sm:p-16 animate-in fade-in duration-300 cursor-pointer"
+                    onClick={togglePlay}
+                >
+                    {/* Main Content Area */}
+                    <div className="flex-1 flex flex-col lg:flex-row items-center justify-between gap-12 w-full max-w-7xl mx-auto my-auto select-none">
+                        {/* Left Info Panel */}
+                        <div className="flex-1 flex flex-col lg:justify-between lg:self-stretch text-left max-w-2xl py-2" onClick={(e) => e.stopPropagation()}>
+                            <div className="flex flex-col gap-6 lg:my-auto">
+                                {/* Movie Logo / Title */}
+                                {failedLogo || !item.Id ? (
+                                    <h1 className="text-4xl sm:text-6xl font-bold tracking-tight text-white">{item.Name}</h1>
+                                ) : (
+                                    <img
+                                        src={getLogoUrl(item.Id)}
+                                        alt={item.Name || ''}
+                                        className="h-20 sm:h-32 object-contain object-left max-w-[85%]"
+                                        onError={() => setFailedLogo(true)}
+                                    />
+                                )}
+
+                                {/* Info Badges Row */}
+                                <div className="flex flex-wrap items-center gap-4 text-sm sm:text-base font-medium text-white/80">
+                                    {item.PremiereDate && (
+                                        <span>{new Date(item.PremiereDate).getFullYear()}</span>
+                                    )}
+                                    {item.OfficialRating && (
+                                        <Badge variant="outline" className="border-white/20 text-white/90 font-medium rounded-xs px-2 py-0.5 bg-transparent">
+                                            {getCleanRating(item.OfficialRating)}
+                                        </Badge>
+                                    )}
+                                    {item.RunTimeTicks && (
+                                        <span>{ticksToReadableTime(item.RunTimeTicks)}</span>
+                                    )}
+                                </div>
+
+                                {/* Overview / Synopsis */}
+                                <p className="text-base sm:text-lg text-white/80 leading-relaxed font-normal line-clamp-4 max-w-2xl">
+                                    {item.Overview}
+                                </p>
+                            </div>
+
+                            {/* Playback Progress Section */}
+                            <div className="w-full space-y-3 mt-8 lg:mt-auto pt-4 pb-16 lg:pb-24">
+                                {/* Visual progress bar */}
+                                <div className="w-full h-[3px] rounded-full bg-white/20 relative">
+                                    <div
+                                        className="h-full bg-white rounded-full transition-all duration-300"
+                                        style={{ width: `${progressPercentage}%` }}
+                                    />
+                                </div>
+                                {/* Progress text details */}
+                                <div className="flex flex-wrap items-center gap-1.5 text-xs sm:text-sm text-white/60 font-medium tracking-wide">
+                                    <span>•</span>
+                                    <span>{formatPlayTime(clampedCurrentTime)} / {formatPlayTime(duration)}</span>
+                                    <span>•</span>
+                                    <span>{progressPercentage.toFixed(0)}% watched</span>
+                                    <span>•</span>
+                                    <span>Ends at {(() => {
+                                        const remainingTicks = (duration - clampedCurrentTime) * 10000000;
+                                        return getEndsAt(remainingTicks).toLocaleTimeString([], {
+                                            hour: '2-digit',
+                                            minute: '2-digit',
+                                        });
+                                    })()}</span>
+                                    <span>•</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Right Disc Art Panel */}
+                        {item.Id && (
+                            <div className="shrink-0 flex items-center justify-center z-20" onClick={(e) => e.stopPropagation()}>
+                                <div className="relative w-64 h-64 sm:w-80 sm:h-80 md:w-96 md:h-96 lg:w-[26rem] lg:h-[26rem] rounded-full border-[6px] border-white/10 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.95)] overflow-hidden bg-zinc-950 flex items-center justify-center">
+                                    
+                                    {/* Spinning Disc content wrapper */}
+                                    <div className="absolute inset-0 w-full h-full rounded-full overflow-hidden animate-cd-spin">
+                                        {/* Disc art: the actual disc image or fallback */}
+                                        {!discImageFailed ? (
+                                            <img
+                                                src={getItemImageUrl(item.Id, 'Disc', 0)}
+                                                alt=""
+                                                className="w-full h-full object-contain z-10"
+                                                draggable={false}
+                                                onError={() => setDiscImageFailed(true)}
+                                            />
+                                        ) : (
+                                            <>
+                                                {/* Fallback generic CD design */}
+                                                <div className="absolute inset-0 bg-gradient-to-br from-zinc-800 to-zinc-950 z-10" />
+                                                
+                                                {/* Top Crest / Studio Logo printed on fallback disc */}
+                                                <div className="absolute top-8 left-1/2 -translate-x-1/2 flex flex-col items-center z-25 opacity-70 select-none pointer-events-none">
+                                                    <div className="w-5 h-5 border border-yellow-500/40 rounded-full flex items-center justify-center bg-yellow-500/5">
+                                                        <span className="text-[5px] text-yellow-400 font-bold uppercase tracking-tighter">BD</span>
+                                                    </div>
+                                                    <span className="text-[4px] text-yellow-400/80 font-bold tracking-widest uppercase mt-0.5">PELAGICA PICTURES</span>
+                                                </div>
+
+                                                {/* Movie Logo printed on fallback disc */}
+                                                <div className="absolute right-6 top-1/2 -translate-y-1/2 w-32 sm:w-40 lg:w-44 z-25 pointer-events-none select-none drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)] rotate-[6deg] flex justify-center">
+                                                    {!failedLogo ? (
+                                                        <img
+                                                            src={getLogoUrl(item.Id)}
+                                                            alt=""
+                                                            className="w-full object-contain max-h-14 opacity-90 filter brightness-110"
+                                                            onError={() => setFailedLogo(true)}
+                                                        />
+                                                    ) : (
+                                                        <span className="text-white text-xs sm:text-sm font-bold tracking-tight uppercase text-center line-clamp-2">
+                                                            {item.Name}
+                                                        </span>
+                                                    )}
+                                                </div>
+
+                                                {/* DTS and Blu-ray Logos printed on fallback disc */}
+                                                <div className="absolute right-10 top-2/3 -translate-y-1/2 flex flex-col items-center gap-0.5 bg-brand/35 backdrop-blur-xs py-1.5 px-2 rounded-md border border-brand/20 max-w-[80px] text-center rotate-[6deg] z-25 select-none pointer-events-none shadow-[0_4px_6px_rgba(0,0,0,0.4)]">
+                                                    <span className="text-[9px] font-extrabold tracking-widest text-white uppercase leading-none">dts-HD</span>
+                                                    <span className="text-[6px] text-white/95 font-bold uppercase tracking-wider leading-none">Master Audio</span>
+                                                    <div className="w-10 h-px bg-white/20 my-0.5" />
+                                                    <span className="text-[8px] font-extrabold text-white uppercase tracking-wider leading-none">Blu-ray Disc</span>
+                                                </div>
+                                            </>
+                                        )}
+                                    </div>
+                                    
+                                    {/* Transparent outer plastic edge rim */}
+                                    <div className="absolute inset-0 rounded-full border-[6px] border-white/5 pointer-events-none z-30" />
+                                    <div className="absolute inset-[6px] rounded-full border border-black/40 pointer-events-none z-30" />
+                                    
+                                    {/* Outer colored ring matching the brand */}
+                                    <div className="absolute inset-0 rounded-full border-[10px] border-brand/20 pointer-events-none z-20" />
+                                    <div className="absolute inset-[10px] rounded-full border border-white/10 pointer-events-none z-20" />
+
+                                    {/* Spindle hole area */}
+                                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-transparent border-[6px] border-black/40 shadow-lg flex items-center justify-center z-30">
+                                        {/* Clear frosted plastic inner ring */}
+                                        <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full border border-white/20 bg-white/5 flex items-center justify-center backdrop-blur-[1px]">
+                                            {/* Inner silver/grey bevel */}
+                                            <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full border-2 border-zinc-600 bg-zinc-900 flex items-center justify-center shadow-[inset_0_2px_4px_rgba(0,0,0,0.8)]">
+                                                {/* Actual black hole */}
+                                                <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-black shadow-[inset_0_4px_10px_rgba(0,0,0,0.9)]" />
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Metallic / Rainbow reflection layers */}
+                                    <div
+                                        className="absolute inset-0 pointer-events-none mix-blend-screen opacity-25 z-30"
+                                        style={{
+                                            background: 'conic-gradient(from 0deg at 50% 50%, transparent 0%, rgba(255,255,255,0.3) 8%, transparent 15%, transparent 40%, rgba(255,255,255,0.3) 48%, transparent 55%, transparent 90%, rgba(255,255,255,0.3) 95%, transparent 100%)',
+                                        }}
+                                    />
+                                    <div
+                                        className="absolute inset-0 pointer-events-none mix-blend-color-dodge opacity-20 z-30"
+                                        style={{
+                                            background: 'conic-gradient(from 180deg at 50% 50%, transparent 0%, rgba(120,119,198,0.2) 12%, rgba(222,0,75,0.2) 24%, transparent 35%, transparent 70%, rgba(0,222,150,0.2) 82%, transparent 95%, transparent 100%)',
+                                        }}
+                                    />
+                                    <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/5 to-transparent pointer-events-none mix-blend-overlay z-30" />
+                                    <div className="absolute inset-0 bg-gradient-to-bl from-transparent via-white/5 to-transparent pointer-events-none mix-blend-overlay z-30" />
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            )}
         </>
     );
 };

@@ -7,7 +7,10 @@ import (
 
 func Setup(app *fiber.App) {
 	app.Use(func(c fiber.Ctx) error {
-		c.Set("Content-Type", "application/json")
+		path := c.Path()
+		if path != "/api/studios/search/logo" && path != "/api/studios/search/video" {
+			c.Set("Content-Type", "application/json")
+		}
 		return c.Next()
 	})
 

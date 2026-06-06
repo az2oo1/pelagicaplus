@@ -47,7 +47,7 @@ export function useQuickConnectAuthenticate() {
             const accessToken = res.data.AccessToken || '';
             const userId = res.data.User?.Id || '';
 
-            saveCredentials(server, userId, accessToken);
+            saveCredentials(server, userId, accessToken, res.data.User?.Name || undefined);
 
             return { api, user: res.data.User };
         },

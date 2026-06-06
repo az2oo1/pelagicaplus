@@ -20,6 +20,7 @@ interface VideoPlayerProps {
     onReady?: (player: VideoJsPlayer) => void;
     isAudioSwitchRef: React.MutableRefObject<boolean>;
     subtitleTrackIndex: number | null;
+    subtitleOffset: number;
 }
 
 const VideoPlayer = ({
@@ -30,6 +31,7 @@ const VideoPlayer = ({
     onReady,
     isAudioSwitchRef,
     subtitleTrackIndex,
+    subtitleOffset,
 }: VideoPlayerProps) => {
     const videoRef = useRef<HTMLVideoElement | null>(null);
     const playerRef = useRef<VideoJsPlayer | null>(null);
@@ -69,14 +71,12 @@ const VideoPlayer = ({
         const handlePlaying = () => setIsBuffering(false);
         const handleSeeking = () => setIsBuffering(true);
         const handleSeeked = () => setIsBuffering(false);
-        const handleCanPlay = () => setIsBuffering(false);
         const handleLoadStart = () => setIsBuffering(true);
 
         player.on('waiting', handleWaiting);
         player.on('playing', handlePlaying);
         player.on('seeking', handleSeeking);
         player.on('seeked', handleSeeked);
-        player.on('canplay', handleCanPlay);
         player.on('loadstart', handleLoadStart);
 
         player.ready(() => {
@@ -93,7 +93,6 @@ const VideoPlayer = ({
                 p.off('playing', handlePlaying);
                 p.off('seeking', handleSeeking);
                 p.off('seeked', handleSeeked);
-                p.off('canplay', handleCanPlay);
                 p.off('loadstart', handleLoadStart);
                 p.dispose();
                 playerRef.current = null;
@@ -186,6 +185,51 @@ const VideoPlayer = ({
         };
     }, [subtitles, src, subtitleTrackIndex]);
 
+    useEffect(() => {
+        if (!playerRef.current) return;
+        const player = playerRef.current;
+
+        const applyOffset = () => {
+            const tracksList = player.textTracks() as any;
+            const tracks = tracksList.tracks_ || Array.from(tracksList);
+            for (let t = 0; t < tracks.length; t++) {
+                const track = tracks[t];
+                const cues = track.cues;
+                if (!cues) continue;
+                for (let i = 0; i < cues.length; i++) {
+                    const cue = cues[i] as any;
+                    if (cue.originalStartTime === undefined) {
+                        cue.originalStartTime = cue.startTime;
+                    }
+                    if (cue.originalEndTime === undefined) {
+                        cue.originalEndTime = cue.endTime;
+                    }
+                    cue.startTime = cue.originalStartTime + subtitleOffset;
+                    cue.endTime = cue.originalEndTime + subtitleOffset;
+                }
+            }
+        };
+
+        applyOffset();
+
+        const tracks = player.textTracks();
+        const handleTrackLoad = () => {
+            applyOffset();
+        };
+
+        tracks.addEventListener('addtrack', handleTrackLoad);
+        tracks.addEventListener('change', handleTrackLoad);
+
+        // Periodically verify or apply to handle late loaded remote tracks
+        const interval = setInterval(applyOffset, 1000);
+
+        return () => {
+            tracks.removeEventListener('addtrack', handleTrackLoad);
+            tracks.removeEventListener('change', handleTrackLoad);
+            clearInterval(interval);
+        };
+    }, [subtitleOffset]);
+
     return (
         <div
             className="w-full h-full overflow-hidden relative"
@@ -200,13 +244,8 @@ const VideoPlayer = ({
                 <track kind="captions" srcLang="en" label="English" />
             </video>
             {isBuffering && (
-                <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/40 backdrop-blur-[2px] transition-opacity duration-300">
-                    <div className="flex flex-col items-center gap-3">
-                        <Loader2 className="w-10 h-10 animate-spin text-brand" />
-                        <span className="text-xs text-zinc-300 font-semibold tracking-wider uppercase select-none drop-shadow-md">
-                            Loading...
-                        </span>
-                    </div>
+                <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/40 backdrop-blur-[2px] transition-opacity duration-300 pointer-events-none">
+                    <Loader2 className="w-10 h-10 animate-spin text-white" />
                 </div>
             )}
         </div>

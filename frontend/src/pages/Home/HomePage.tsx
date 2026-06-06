@@ -12,6 +12,7 @@ import type { CollectionType } from '@jellyfin/sdk/lib/generated-client/models';
 import GenresRow from './GenresRow';
 import LibrariesRow from './LibrariesRow';
 import StudiosRow from './StudiosRow';
+import LazyRow from '@/components/LazyRow';
 
 function getDetailFieldsForCollectionType(type: CollectionType | undefined): DetailField[] {
     switch (type) {
@@ -43,61 +44,67 @@ const HomePage = () => {
                     switch (section.type) {
                         case 'studios':
                             return (
-                                <StudiosRow
-                                    key={index}
-                                    title={section.title || t('studios')}
-                                    limit={section.limit}
-                                />
+                                <LazyRow key={index} placeholderHeight="140px">
+                                    <StudiosRow
+                                        title={section.title || t('studios')}
+                                        limit={section.limit}
+                                    />
+                                </LazyRow>
                             );
                         case 'libraries':
                             return (
-                                <LibrariesRow key={index} title={section.title || t('libraries')} />
+                                <LazyRow key={index} placeholderHeight="150px">
+                                    <LibrariesRow title={section.title || t('libraries')} />
+                                </LazyRow>
                             );
 
                         case 'continueWatching':
                             return (
-                                <ContinueWatchingRow
-                                    key={index}
-                                    title={section.title || t('continue_watching')}
-                                    titleLine={section.titleLine}
-                                    detailLine={
-                                        section.detailLine !== undefined
-                                            ? section.detailLine
-                                            : ['TimeRemaining']
-                                    }
-                                    limit={section.limit || 20}
-                                    accurateSorting={section.accurateSorting}
-                                />
+                                <LazyRow key={index} placeholderHeight="280px">
+                                    <ContinueWatchingRow
+                                        title={section.title || t('continue_watching')}
+                                        titleLine={section.titleLine}
+                                        detailLine={
+                                            section.detailLine !== undefined
+                                                ? section.detailLine
+                                                : ['TimeRemaining']
+                                        }
+                                        limit={section.limit || 20}
+                                        accurateSorting={section.accurateSorting}
+                                    />
+                                </LazyRow>
                             );
 
                         case 'nextUp':
                             return (
-                                <NextUpRow
-                                    key={index}
-                                    title={section.title || t('next_up')}
-                                    titleLine={section.titleLine}
-                                    detailLine={
-                                        section.detailLine !== undefined
-                                            ? section.detailLine
-                                            : ['TimeRemaining']
-                                    }
-                                    limit={section.limit || 20}
-                                />
+                                <LazyRow key={index} placeholderHeight="280px">
+                                    <NextUpRow
+                                        title={section.title || t('next_up')}
+                                        titleLine={section.titleLine}
+                                        detailLine={
+                                            section.detailLine !== undefined
+                                                ? section.detailLine
+                                                : ['TimeRemaining']
+                                        }
+                                        limit={section.limit || 20}
+                                    />
+                                </LazyRow>
                             );
 
                         case 'resume':
                             return (
-                                <ResumeRow
-                                    key={index}
-                                    title={section.title || t('resume')}
-                                    titleLine={section.titleLine}
-                                    detailLine={
-                                        section.detailLine !== undefined
-                                            ? section.detailLine
-                                            : ['TimeRemaining']
-                                    }
-                                    limit={section.limit || 20}
-                                />
+                                <LazyRow key={index} placeholderHeight="280px">
+                                    <ResumeRow
+                                        title={section.title || t('resume')}
+                                        titleLine={section.titleLine}
+                                        detailLine={
+                                            section.detailLine !== undefined
+                                                ? section.detailLine
+                                                : ['TimeRemaining']
+                                        }
+                                        limit={section.limit || 20}
+                                    />
+                                </LazyRow>
                             );
 
                         case 'mediaBar':
@@ -113,77 +120,104 @@ const HomePage = () => {
                                 />
                             );
 
-                        case 'recentlyAdded':
+                        case 'recentlyAdded': {
+                            const allowedTypes = (section as any).types !== undefined
+                                ? (section as any).types
+                                : [
+                                    'Movie',
+                                    'Series',
+                                    'MusicAlbum',
+                                ];
+                            const allowedCollectionTypes = allowedTypes.flatMap((t: string) => {
+                                switch (t) {
+                                    case 'Movie': return ['movies'];
+                                    case 'Series': return ['tvshows'];
+                                    case 'MusicAlbum': return ['music'];
+                                    case 'Playlist': return ['playlists'];
+                                    case 'BoxSet': return ['boxsets'];
+                                    default: return [];
+                                }
+                            });
+
                             return (
                                 <div key={index} className="flex flex-col gap-4">
                                     {userViews && userViews.Items ? (
                                         <>
-                                            {userViews.Items.map((view) => (
-                                                <div key={view.Id} data-library-id={view.Id}>
-                                                    {view.Id && view.Name && (
-                                                        <ItemsRow
-                                                            title={t('recently_added', {
+                                            {userViews.Items.filter((view) => 
+                                                !view.CollectionType || allowedCollectionTypes.includes(view.CollectionType)
+                                            ).map((view) => {
+                                                const title = t('recently_added', {
                                                                 category: view.Name,
-                                                            })}
-                                                            items={{
+                                                            });
+                                                const itemsConfig = {
                                                                 libraryId: view.Id,
                                                                 sortBy: ['DateCreated'],
                                                                 sortOrder: 'Descending',
                                                                 limit: section.limit || 10,
-                                                                types: [
-                                                                    'Movie',
-                                                                    'Series',
-                                                                    'MusicAlbum',
-                                                                ],
-                                                            }}
-                                                            detailFields={getDetailFieldsForCollectionType(
-                                                                view.CollectionType
+                                                                types: allowedTypes,
+                                                            };
+                                                return (
+                                                    <LazyRow key={view.Id} placeholderHeight="320px">
+                                                        <div data-library-id={view.Id}>
+                                                            {view.Id && view.Name && (
+                                                                <ItemsRow
+                                                                    title={title}
+                                                                    allLink={`/items?title=${encodeURIComponent(title)}&config=${encodeURIComponent(JSON.stringify(itemsConfig))}`}
+                                                                    items={itemsConfig as any}
+                                                                    detailFields={getDetailFieldsForCollectionType(
+                                                                        view.CollectionType
+                                                                    )}
+                                                                />
                                                             )}
-                                                        />
-                                                    )}
-                                                </div>
-                                            ))}
+                                                        </div>
+                                                    </LazyRow>
+                                                );
+                                            })}
                                         </>
                                     ) : (
                                         <p>Loading user views...</p>
                                     )}
                                 </div>
                             );
+                        }
 
                         case 'items':
                             return (
-                                <ItemsRow
-                                    key={index}
-                                    title={section.title}
-                                    allLink={section.allLink}
-                                    items={section.items}
-                                    detailFields={
-                                        section.detailFields && section.detailFields.length > 0
-                                            ? section.detailFields
-                                            : ['ReleaseYear']
-                                    }
-                                />
+                                <LazyRow key={index} placeholderHeight="320px">
+                                    <ItemsRow
+                                        title={section.title}
+                                        allLink={section.allLink || `/items?title=${encodeURIComponent(section.title || 'Items')}&config=${encodeURIComponent(JSON.stringify(section.items || {}))}`}
+                                        items={section.items}
+                                        detailFields={
+                                            section.detailFields && section.detailFields.length > 0
+                                                ? section.detailFields
+                                                : ['ReleaseYear']
+                                        }
+                                    />
+                                </LazyRow>
                             );
 
                         case 'streamystatsRecommended':
                             return (
-                                <RecommendedItemsRow
-                                    key={index}
-                                    title={section.title || t('recommended_for_you')}
-                                    type={section.recommendationType}
-                                    limit={section.limit}
-                                    showSimilarity={section.showSimilarity}
-                                    showBasedOn={section.showBasedOn}
-                                />
+                                <LazyRow key={index} placeholderHeight="320px">
+                                    <RecommendedItemsRow
+                                        title={section.title || t('recommended_for_you')}
+                                        type={section.recommendationType}
+                                        limit={section.limit}
+                                        showSimilarity={section.showSimilarity}
+                                        showBasedOn={section.showBasedOn}
+                                    />
+                                </LazyRow>
                             );
 
                         case 'genres':
                             return (
-                                <GenresRow
-                                    key={index}
-                                    title={section.title || t('genres')}
-                                    limit={section.limit}
-                                />
+                                <LazyRow key={index} placeholderHeight="140px">
+                                    <GenresRow
+                                        title={section.title || t('genres')}
+                                        limit={section.limit}
+                                    />
+                                </LazyRow>
                             );
 
                         default:

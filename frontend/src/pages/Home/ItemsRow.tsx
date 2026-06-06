@@ -1,5 +1,4 @@
 import SectionScroller from '@/components/SectionScroller';
-import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { DetailField, SectionItemsConfig } from '@/hooks/api/useConfig';
 import { useRowItems } from '@/hooks/api/useRowItems';
@@ -7,7 +6,7 @@ import { Link } from 'react-router';
 import { useEffect, useMemo, type ReactNode } from 'react';
 import type { BaseItemDto } from '@jellyfin/sdk/lib/generated-client/models';
 import { getEndsAt, ticksToReadableTime } from '@/utils/timeConversion';
-import { Star, Film, Tv } from 'lucide-react';
+import { Star, Film, Tv, ChevronRight } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import type { TFunction } from 'i18next';
 import ScrollableSectionPoster from '@/components/ScrollableSectionPoster';
@@ -121,6 +120,7 @@ function getDetailFieldsStringForItem(
 const ItemsRow = ({ title, allLink, items, detailFields }: ItemsRowProps) => {
     const { t } = useTranslation('home');
     const { data: recentItems, isLoading } = useRowItems(items);
+    const isSquare = detailFields?.includes('Artist') || detailFields?.includes('TrackCount');
 
     const posterUrls = useMemo(() => {
         if (!recentItems) return {};
@@ -143,15 +143,15 @@ const ItemsRow = ({ title, allLink, items, detailFields }: ItemsRowProps) => {
         ((recentItems && recentItems.length > 0) || isLoading) && (
             <SectionScroller
                 className="max-w-full"
-                title={<h2 className="text-2xl font-bold flex items-center gap-2">{title}</h2>}
-                additionalButtons={
-                    <>
-                        {allLink && (
-                            <Button variant={'outline'} asChild>
-                                <Link to={allLink}>{t('view_all')}</Link>
-                            </Button>
-                        )}
-                    </>
+                title={
+                    allLink ? (
+                        <Link to={allLink} className="flex items-center gap-1 group cursor-pointer w-fit hover:text-primary transition-colors">
+                            <h2 className="text-2xl font-bold">{title}</h2>
+                            <ChevronRight className="w-7 h-7 opacity-50 group-hover:opacity-100 transition-opacity" />
+                        </Link>
+                    ) : (
+                        <h2 className="text-2xl font-bold flex items-center gap-2">{title}</h2>
+                    )
                 }
                 items={
                     recentItems
@@ -179,7 +179,10 @@ const ItemsRow = ({ title, allLink, items, detailFields }: ItemsRowProps) => {
                           ))
                         : Array.from({ length: 5 }).map((_, index) => (
                               <div key={index} className="w-36 lg:w-44 2xl:w-52">
-                                  <Skeleton className="w-36 h-54 lg:w-44 lg:h-64 2xl:w-52 2xl:h-80 rounded-md mb-2" />
+                                  <Skeleton className={isSquare 
+                                      ? "w-36 h-36 lg:w-44 lg:h-44 2xl:w-52 2xl:h-52 rounded-md mb-2" 
+                                      : "w-36 h-54 lg:w-44 lg:h-64 2xl:w-52 2xl:h-80 rounded-md mb-2"
+                                  } />
                                   <Skeleton className="w-32 lg:w-40 2xl:w-48 h-4 mb-1" />
                                   <Skeleton className="w-20 lg:w-24 2xl:w-28 h-3" />
                               </div>

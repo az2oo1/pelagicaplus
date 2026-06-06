@@ -58,7 +58,10 @@ func main() {
 	api.Post("/themes/:id/install", protected, handlers.InstallTheme)
 
 	api.Get("/studios", handlers.GetStudios)
-	api.Get("/studios/:name/thumb", handlers.GetStudioThumb)
+	api.Get("/studios/search/logo", handlers.SearchStudioLogo)
+	api.Get("/studios/search/video", handlers.SearchStudioVideo)
+
+	api.All("/seerr/*", handlers.ProxySeerrRequest)
 
 	api.Get("/stats-consent", handlers.GetStatsConsent)
 	api.Post("/stats-consent", handlers.PostStatsConsent)

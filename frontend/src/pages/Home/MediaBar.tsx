@@ -1,4 +1,5 @@
 import FavoriteButton from '@/components/FavoriteButton';
+import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -15,7 +16,7 @@ import type { SectionItemsConfig } from '@/hooks/api/useConfig';
 import { useMediaBarItems } from '@/hooks/api/useMediaBarItems';
 import { getBackdropUrl, getLogoUrl } from '@/utils/jellyfinUrls';
 import { getEndsAt, ticksToReadableTime } from '@/utils/timeConversion';
-import { Play, Star } from 'lucide-react';
+import { Play, Star, Info } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router';
@@ -77,7 +78,7 @@ const MediaBar = ({
                 : 'max-h-30 sm:max-h-50';
 
     return (
-        <div className={`${className} relative`}>
+        <div className={cn('relative mt-14', className)}>
             {title && <h2 className="text-2xl font-bold mb-3 pl-12 pt-4">{title}</h2>}
 
             <div
@@ -220,10 +221,16 @@ const MediaBar = ({
                                             {item.Overview}
                                         </p>
                                         <div className="flex items-center gap-2">
-                                            <Button variant="default" size="lg" asChild>
-                                                <Link to={`/item/${item.Id}`}>
+                                            <Button variant="default" size="lg" className="hover:scale-105 active:scale-95 transition-transform duration-200 ease-out" asChild>
+                                                <Link to={`/play/${item.Id}`}>
                                                     <Play />
                                                     {t('play')}
+                                                </Link>
+                                            </Button>
+                                            <Button variant="outline" size="lg" className="hover:scale-105 active:scale-95 transition-transform duration-200 ease-out flex items-center gap-2 bg-black/40 border-white/10 text-white hover:bg-black/60" asChild>
+                                                <Link to={`/item/${item.Id}`}>
+                                                    <Info className="w-5 h-5" />
+                                                    {t('more_info', { defaultValue: 'More Info' })}
                                                 </Link>
                                             </Button>
                                             {showFavoriteButton !== false && (

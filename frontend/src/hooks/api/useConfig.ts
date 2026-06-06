@@ -52,6 +52,8 @@ export interface RecentlyAddedSection extends BaseHomeScreenSection {
     type: 'recentlyAdded';
     /** Maximum number of items to display */
     limit?: number;
+    /** Filter by media types */
+    types?: ('Movie' | 'Series' | 'BoxSet' | 'MusicAlbum' | 'Playlist')[];
 }
 
 export const DETAIL_FIELDS = [
@@ -206,6 +208,8 @@ export interface AppConfig {
     serverAddress?: string;
     /** Optional URL for Streamystats integration */
     streamystatsUrl?: string;
+    /** Optional URL for Seerr integration */
+    seerrUrl?: string;
     /** Whether to show the Streamystats button in the user menu */
     showStreamystatsButton?: boolean;
     /** Whether to show the watched state badge for items on the home screen */
@@ -216,6 +220,18 @@ export interface AppConfig {
     watchedStateBadgeGenre?: boolean;
     /** Whether to show the watched state badge for items on search pages */
     watchedStateBadgeSearch?: boolean;
+    /** Whether to show the 10-second Netflix-style content advisory on playback */
+    showContentAdvisory?: boolean;
+    /** Whether to show the immersive pause overlay screensaver after 15 seconds */
+    showPauseOverlay?: boolean;
+    /** Whether to enable backdrop blur effects (can make the app feel heavy if disabled) */
+    enableBlur?: boolean;
+    /** Whether to show poster tags like HD/4K/CC on the home screen library items */
+    showPosterTags?: boolean;
+    /** Whether to show genre tags on posters */
+    showGenreTags?: boolean;
+    /** Behavior of the top bar (sticky, hidden, transparent, etc) */
+    topBarBehavior?: 'sticky' | 'fixed' | 'hidden';
     /** Settings for item detail pages */
     itemPage?: ItemPageSettings;
     /** Sections to display on the home screen, in order */
@@ -246,6 +262,12 @@ const DEFAULT_CONFIG: AppConfig = {
     watchedStateBadgeLibrary: false,
     watchedStateBadgeGenre: false,
     watchedStateBadgeSearch: false,
+    showContentAdvisory: true,
+    showPauseOverlay: true,
+    enableBlur: true,
+    showPosterTags: true,
+    showGenreTags: true,
+    topBarBehavior: 'sticky',
     links: [],
     serverName: 'Pelagica',
     logoLightUrl: '',

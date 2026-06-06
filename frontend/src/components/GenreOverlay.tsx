@@ -20,6 +20,7 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { BaseItemDto } from '@jellyfin/sdk/lib/generated-client/models';
+import { useConfig } from '@/hooks/api/useConfig';
 
 const genreIconMap: Record<string, LucideIcon> = {
     action: Swords,
@@ -49,7 +50,8 @@ interface GenreOverlayProps {
 }
 
 export const GenreOverlay = ({ item, show }: GenreOverlayProps) => {
-    if (!show || !item?.Genres || item.Genres.length === 0) return null;
+    const { config } = useConfig();
+    if (!show || config?.showGenreTags === false || !item?.Genres || item.Genres.length === 0) return null;
 
     // Display at most 3 genres to keep the card clean
     const genresToShow = item.Genres.slice(0, 3);

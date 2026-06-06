@@ -22,11 +22,20 @@ import SettingsPage from './pages/Settings/SettingsPage.tsx';
 import SearchPage from './pages/Search/SearchPage.tsx';
 import PelagicaThemeLoader from './components/PelagicaThemeProvider.tsx';
 import ThemeBrowserPage from './pages/ThemeBroser/ThemeBrowserPage.tsx';
+import AllStudiosPage from './pages/Studios/AllStudiosPage.tsx';
+import AllItemsPage from './pages/Items/AllItemsPage.tsx';
 import { Toaster } from './components/ui/sonner.tsx';
 import StatsConsentModal from './components/StatsConsentModal.tsx';
 import { AppPreloader } from './components/AppPreloader.tsx';
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+    defaultOptions: {
+        queries: {
+            staleTime: 5 * 60 * 1000, // 5 minutes cache validity
+            refetchOnWindowFocus: false, // disable refetch on window focus
+        },
+    },
+});
 
 createRoot(document.getElementById('root')!).render(
     <QueryClientProvider client={queryClient}>
@@ -44,6 +53,8 @@ createRoot(document.getElementById('root')!).render(
                                 <Route path="/" element={<HomePage />} />
                                 <Route path="/library" element={<LibraryPage />} />
                                 <Route path="/item/:itemId" element={<ItemPage />} />
+                                <Route path="/items" element={<AllItemsPage />} />
+                                <Route path="/studios" element={<AllStudiosPage />} />
                                 <Route path="/studio/:studioId" element={<StudioPage />} />
                                 <Route path="/person/:itemId" element={<PersonPage />} />
                                 <Route path="/login" element={<LoginPage />} />

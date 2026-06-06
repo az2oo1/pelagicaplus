@@ -270,8 +270,8 @@ export function getPrimaryImageUrl(
     }
 }
 
-export function getStudioImageUrl(studioName: string) {
-    return `/api/studios/${encodeURIComponent(studioName)}/thumb`;
+export function getStudioImageUrl(studioId: string) {
+    return getPrimaryImageUrl(studioId);
 }
 
 export function getTrickplayImageUrl(itemId: string, width: number, imageIndex: number) {

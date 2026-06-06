@@ -13,6 +13,7 @@ import {
     type HomeScreenSection,
     type SectionItemsConfig,
     type ConfigLink,
+    type EpisodeDisplay,
 } from '@/hooks/api/useConfig';
 import { useState, useEffect, memo } from 'react';
 import { Label } from '@/components/ui/label';
@@ -55,7 +56,7 @@ import { Link, useSearchParams } from 'react-router';
 import { toast } from 'sonner';
 import { IconPicker, type IconName } from '../../components/ui/icon-picker';
 import { DynamicIcon } from 'lucide-react/dynamic';
-import { getAccessToken, getServerUrl } from '@/utils/localstorageCredentials';
+import { getAccessToken, getPassword, setPassword } from '@/utils/localstorageCredentials';
 import FileDropInput from '@/components/FileDropInput';
 import { useStatsConsent } from '../../hooks/api/statsConsent/useStatsConsent';
 import { useSetStatsConsent } from '../../hooks/api/statsConsent/useSetStatsConsent';
@@ -66,12 +67,14 @@ const StringInput = ({
     onChange,
     placeholder,
     description,
+    type = 'text',
 }: {
     label: string;
     value: string;
     onChange: (value: string) => void;
     placeholder?: string;
     description?: string;
+    type?: string;
 }) => (
     <div className="mt-4">
         <Label htmlFor={label} className="mb-2">
@@ -80,6 +83,7 @@ const StringInput = ({
         {description && <p className="mb-2 text-sm text-muted-foreground">{description}</p>}
         <Input
             id={label}
+            type={type}
             value={value}
             onChange={(e) => onChange(e.target.value)}
             placeholder={placeholder}
@@ -403,6 +407,26 @@ const SectionEditor = ({
                             />
                         </>
                     )}
+
+                    {editedSection.type === 'recentlyAdded' && (
+                        <MultiSelectInput
+                            label={t('item_types')}
+                            options={[
+                                { value: 'Movie', label: 'Movie' },
+                                { value: 'Series', label: 'Series' },
+                                { value: 'BoxSet', label: 'Box Set' },
+                                { value: 'MusicAlbum', label: 'Music Album' },
+                                { value: 'Playlist', label: 'Playlist' },
+                            ]}
+                            selected={((editedSection as any).types || ['Movie', 'Series', 'MusicAlbum']) as string[]}
+                            onChange={(selected) =>
+                                setEditedSection({
+                                    ...editedSection,
+                                    types: selected,
+                                } as any)
+                            }
+                        />
+                    )}
                 </div>
                 <DialogFooter>
                     <Button variant="outline" onClick={onClose}>
@@ -636,13 +660,21 @@ const SettingsPage = () => {
     const [serverAddress, setServerAddress] = useState('');
     const [streamystatsUrl, setStreamystatsUrl] = useState('');
     const [showStreamystatsButton, setShowStreamystatsButton] = useState(false);
+    const [seerrUrl, setSeerrUrl] = useState('');
+    const [seerrPassword, setSeerrPassword] = useState('');
     const [watchedStateBadgeHomeScreen, setWatchedStateBadgeHomeScreen] = useState(false);
     const [watchedStateBadgeLibrary, setWatchedStateBadgeLibrary] = useState(false);
     const [watchedStateBadgeGenre, setWatchedStateBadgeGenre] = useState(false);
-    const [watchedStateBadgeSearch, setWatchedStateBadgeSearch] = useState(false);
-    const [episodeDisplay, setEpisodeDisplay] = useState<'grid' | 'row'>('row');
-    const [showWatchlistButton, setShowWatchlistButton] = useState(false);
-    const [showDownloadButton, setShowDownloadButton] = useState(false);
+    const [watchedStateBadgeSearch, setWatchedStateBadgeSearch] = useState<boolean>(false);
+    const [showContentAdvisory, setShowContentAdvisory] = useState<boolean>(true);
+    const [showPauseOverlay, setShowPauseOverlay] = useState<boolean>(true);
+    const [enableBlur, setEnableBlur] = useState<boolean>(true);
+    const [showPosterTags, setShowPosterTags] = useState<boolean>(true);
+    const [showGenreTags, setShowGenreTags] = useState<boolean>(true);
+    const [topBarBehavior, setTopBarBehavior] = useState<string>('sticky');
+    const [episodeDisplay, setEpisodeDisplay] = useState<EpisodeDisplay>('row');
+    const [showWatchlistButton, setShowWatchlistButton] = useState<boolean>(false);
+    const [showDownloadButton, setShowDownloadButton] = useState<boolean>(false);
     const [favoriteButton, setFavoriteButton] = useState<string[]>([]);
     const [detailBadges, setDetailBadges] = useState<string[]>([]);
     const [homeScreenSections, setHomeScreenSections] = useState<HomeScreenSection[]>([]);
@@ -684,10 +716,18 @@ const SettingsPage = () => {
         setServerAddress(config?.serverAddress || '');
         setStreamystatsUrl(config?.streamystatsUrl || '');
         setShowStreamystatsButton(config?.showStreamystatsButton || false);
+        setSeerrUrl(config?.seerrUrl || '');
+        setSeerrPassword(getPassword() || '');
         setWatchedStateBadgeHomeScreen(config?.watchedStateBadgeHomeScreen || false);
         setWatchedStateBadgeLibrary(config?.watchedStateBadgeLibrary || false);
         setWatchedStateBadgeGenre(config?.watchedStateBadgeGenre || false);
         setWatchedStateBadgeSearch(config?.watchedStateBadgeSearch || false);
+        setShowContentAdvisory(config?.showContentAdvisory ?? true);
+        setShowPauseOverlay(config?.showPauseOverlay ?? true);
+        setEnableBlur(config?.enableBlur ?? true);
+        setShowPosterTags(config?.showPosterTags ?? true);
+        setShowGenreTags(config?.showGenreTags ?? true);
+        setTopBarBehavior(config?.topBarBehavior || 'sticky');
         setEpisodeDisplay(config?.itemPage?.episodeDisplay || 'row');
         setShowWatchlistButton(config?.itemPage?.showWatchlistButton || false);
         setShowDownloadButton(config?.itemPage?.showDownloadButton || false);
@@ -703,10 +743,17 @@ const SettingsPage = () => {
         config?.serverAddress,
         config?.streamystatsUrl,
         config?.showStreamystatsButton,
+        config?.seerrUrl,
         config?.watchedStateBadgeHomeScreen,
         config?.watchedStateBadgeLibrary,
         config?.watchedStateBadgeGenre,
         config?.watchedStateBadgeSearch,
+        config?.showContentAdvisory,
+        config?.showPauseOverlay,
+        config?.enableBlur,
+        config?.showPosterTags,
+        config?.showGenreTags,
+        config?.topBarBehavior,
         config?.itemPage?.episodeDisplay,
         config?.itemPage?.showWatchlistButton,
         config?.itemPage?.showDownloadButton,
@@ -724,46 +771,44 @@ const SettingsPage = () => {
         const formData = new FormData();
         formData.append('logo', file);
 
-        const jellyfinUrl = getServerUrl() || '';
-        const response = await fetch(
-            `/api/branding/logo/${mode}?jellyfin_url=${encodeURIComponent(jellyfinUrl)}`,
-            {
+        try {
+            const response = await fetch('/api/branding/logo/' + mode, {
                 method: 'POST',
                 headers: {
                     Authorization: getAccessToken() || '',
                 },
                 body: formData,
+            });
+
+            if (!response.ok) throw new Error('Upload failed');
+
+            const data = await response.json();
+            if (mode === 'light') {
+                setLogoLightUrl(data.url);
+                setLogoLightFile(null);
+            } else {
+                setLogoDarkUrl(data.url);
+                setLogoDarkFile(null);
             }
-        );
-
-        if (!response.ok) {
-            throw new Error(`Failed to upload ${mode} logo`);
-        }
-
-        const payload = (await response.json()) as { url?: string };
-        const uploadedUrl = payload.url ? `${payload.url}?v=${Date.now()}` : '';
-
-        if (mode === 'light') {
-            setLogoLightUrl(uploadedUrl);
-        } else {
-            setLogoDarkUrl(uploadedUrl);
+            toast.success(t('upload_success'));
+        } catch {
+            toast.error(t('upload_error'));
         }
     };
 
-    const handleResetBrandingLogo = async (mode: 'light' | 'dark') => {
-        const jellyfinUrl = getServerUrl() || '';
-        const response = await fetch(
-            `/api/branding/logo/${mode}?jellyfin_url=${encodeURIComponent(jellyfinUrl)}`,
-            {
+    const handleRemoveBrandingLogo = async (mode: 'light' | 'dark') => {
+        try {
+            const response = await fetch('/api/branding/logo/' + mode, {
                 method: 'DELETE',
                 headers: {
                     Authorization: getAccessToken() || '',
                 },
-            }
-        );
+            });
 
-        if (!response.ok) {
-            throw new Error(`Failed to reset ${mode} logo`);
+            if (!response.ok) throw new Error('Delete failed');
+            toast.success(t('remove_success'));
+        } catch {
+            toast.error(t('remove_error'));
         }
 
         if (mode === 'light') {
@@ -779,15 +824,23 @@ const SettingsPage = () => {
         // update config takes in the whole config object, so we need to merge the existing config with the updated values
         if (config) {
             try {
+                setPassword(seerrPassword);
                 await updateConfig({
                     ...config,
                     serverAddress,
                     streamystatsUrl,
                     showStreamystatsButton,
+                    seerrUrl,
                     watchedStateBadgeHomeScreen,
                     watchedStateBadgeLibrary,
                     watchedStateBadgeGenre,
                     watchedStateBadgeSearch,
+                    showContentAdvisory,
+                    showPauseOverlay,
+                    enableBlur,
+                    showPosterTags,
+                    showGenreTags,
+                    topBarBehavior: topBarBehavior as any,
                     homeScreenSections,
                     serverName,
                     logoLightUrl,
@@ -943,7 +996,7 @@ const SettingsPage = () => {
                             className="mt-2"
                             onClick={async () => {
                                 try {
-                                    await handleResetBrandingLogo('light');
+                                    await handleRemoveBrandingLogo('light');
                                     toast.success(t('logo_reset_success'));
                                 } catch (resetError) {
                                     console.error('Error resetting light logo:', resetError);
@@ -991,7 +1044,7 @@ const SettingsPage = () => {
                             className="mt-2"
                             onClick={async () => {
                                 try {
-                                    await handleResetBrandingLogo('dark');
+                                    await handleRemoveBrandingLogo('dark');
                                     toast.success(t('logo_reset_success'));
                                 } catch (resetError) {
                                     console.error('Error resetting dark logo:', resetError);
@@ -1032,6 +1085,27 @@ const SettingsPage = () => {
                         checked={showStreamystatsButton}
                         onChange={setShowStreamystatsButton}
                     />
+
+                    <h2 className="mt-6 mb-2 text-xl font-semibold leading-none tracking-tight">
+                        Seerr
+                    </h2>
+                    <p className="mb-2 text-sm text-muted-foreground">
+                        Configure Seerr integration to search for and request new media directly within the app.
+                    </p>
+                    <StringInput
+                        label="Server URL"
+                        value={seerrUrl}
+                        onChange={setSeerrUrl}
+                        placeholder="http://localhost:5055"
+                    />
+                    <StringInput
+                        label="Password"
+                        value={seerrPassword}
+                        onChange={setSeerrPassword}
+                        placeholder="Your Jellyfin Password"
+                        type="password"
+                    />
+
                     <h2 className="mt-6 mb-2 text-xl font-semibold leading-none tracking-tight">
                         {t('watched_state_badges')}
                     </h2>
@@ -1058,6 +1132,47 @@ const SettingsPage = () => {
                         checked={watchedStateBadgeSearch}
                         onChange={setWatchedStateBadgeSearch}
                     />
+
+                    <h2 className="mt-6 mb-2 text-xl font-semibold leading-none tracking-tight">
+                        UI Configuration
+                    </h2>
+                    <BooleanInput
+                        label="Show Content Advisory Overlay (Netflix Style)"
+                        checked={showContentAdvisory}
+                        onChange={setShowContentAdvisory}
+                    />
+                    <BooleanInput
+                        label="Show Immersive Pause Screen Overlay (after 15s)"
+                        checked={showPauseOverlay}
+                        onChange={setShowPauseOverlay}
+                    />
+                    <BooleanInput
+                        label="Enable Backdrop Blur Effects (Uncheck if app feels heavy/laggy)"
+                        checked={enableBlur}
+                        onChange={setEnableBlur}
+                    />
+                    <BooleanInput
+                        label="Show Poster Tags"
+                        checked={showPosterTags}
+                        onChange={setShowPosterTags}
+                    />
+                    <BooleanInput
+                        label="Show Genre Tags"
+                        checked={showGenreTags}
+                        onChange={setShowGenreTags}
+                    />
+                    <SelectInput
+                        label="Top Bar Behavior"
+                        options={[
+                            { value: 'sticky', label: 'Sticky (Stays at top)' },
+                            { value: 'fixed', label: 'Fixed (Floats over content)' },
+                            { value: 'hidden', label: 'Hidden' },
+                        ]}
+                        value={topBarBehavior}
+                        onChange={setTopBarBehavior}
+                        placeholder="Select Top Bar Behavior"
+                    />
+
                     <h2 className="mt-6 mb-2 text-xl font-semibold leading-none tracking-tight">
                         {t('usage_statistics')}
                     </h2>

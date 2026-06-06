@@ -17,12 +17,11 @@ const MovieTvItem = ({ item }: { item: BaseItemDto }) => {
     const [posterError, setPosterError] = useState(false);
     const [isImageLoaded, setIsImageLoaded] = useState(false);
     const posterUrl = getPrimaryImageUrl(item.Id || '', undefined, item.ImageTags?.Primary);
-    const posterAspectRatio = '2/3';
 
     return (
         <Link to={`/item/${item.Id}`} key={item.Id} className="p-0 m-0">
             <div
-                className={`relative w-full aspect-${posterAspectRatio} overflow-hidden rounded-md group`}
+                className="relative w-full aspect-[2/3] overflow-hidden rounded-md group"
             >
                 {!posterError ? (
                     <>

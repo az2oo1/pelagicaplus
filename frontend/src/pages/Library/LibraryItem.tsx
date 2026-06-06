@@ -15,12 +15,14 @@ const LibraryItem = ({
     t,
     posterAspectRatio = '2/3',
     detailLine,
+    overlay,
 }: {
     item: BaseItemDto;
     posterUrl: string;
     t: TFunction;
     posterAspectRatio?: string;
     detailLine?: React.ReactNode;
+    overlay?: React.ReactNode;
 }) => {
     const { config } = useConfig();
     const { loadQueue } = useMusicPlayback();
@@ -42,6 +44,8 @@ const LibraryItem = ({
         }
     };
 
+    const aspectClass = posterAspectRatio === 'square' ? 'aspect-square' : 'aspect-[2/3]';
+
     return (
         <Link
             to={`/item/${item.Id}`}
@@ -50,7 +54,7 @@ const LibraryItem = ({
             onClick={handleClick}
         >
             <div
-                className={`relative w-full aspect-${posterAspectRatio} overflow-hidden rounded-md group`}
+                className={cn("relative w-full overflow-hidden rounded-md group", aspectClass)}
             >
                 {!posterError ? (
                     <>
@@ -79,6 +83,27 @@ const LibraryItem = ({
                     </div>
                 )}
                 <WatchedStateBadge item={item} show={config?.watchedStateBadgeLibrary || false} />
+                
+                {config?.showPosterTags !== false && (
+                    <div className="absolute top-1.5 left-1.5 flex flex-col items-start gap-1.5 z-30 pointer-events-none drop-shadow-md">
+                        {item.HasSubtitles && (
+                            <span className="bg-black/70 backdrop-blur-sm text-white/90 text-[9px] font-bold px-1.5 py-0.5 rounded-[4px] border border-white/20 uppercase tracking-wider">
+                                CC
+                            </span>
+                        )}
+                        {item.MediaSources?.[0]?.MediaStreams?.some(s => s.Type === 'Video' && s.Height && s.Height >= 720) && (
+                            <span className="bg-black/70 backdrop-blur-sm text-brand font-bold text-[9px] px-1.5 py-0.5 rounded-[4px] border border-brand/30 uppercase tracking-wider">
+                                HD
+                            </span>
+                        )}
+                        {item.OfficialRating && (
+                            <span className="bg-black/70 backdrop-blur-sm text-white/90 text-[9px] font-bold px-1.5 py-0.5 rounded-[4px] border border-white/20 uppercase tracking-wider">
+                                {item.OfficialRating}
+                            </span>
+                        )}
+                    </div>
+                )}
+                {overlay}
             </div>
             <p className="mt-2 text-sm line-clamp-1 text-ellipsis break-all">
                 {item.Name || t('library:no_title')}

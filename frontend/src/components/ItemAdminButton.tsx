@@ -6,7 +6,7 @@ import {
     DropdownMenuTrigger,
 } from './ui/dropdown-menu';
 import { Button } from './ui/button';
-import { Captions, EllipsisVertical, Image, RotateCcw, Trash2, PencilLine } from 'lucide-react';
+import { Captions, EllipsisVertical, Image, RotateCcw, Trash2, PencilLine, Search, Link2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useCurrentUser } from '@/hooks/api/useCurrentUser';
 import { useRef } from 'react';
@@ -15,6 +15,9 @@ import RefreshItemMetadataButton from './RefreshItemMetadataButton';
 import EditItemMetadataButton from './EditItemMetadataButton';
 import MediaDeleteButton from './MediaDeleteButton';
 import SubtitleDownloadDialog from '../pages/Item/SubtitleDownloadDialog';
+import IdentifyDialog from './IdentifyDialog';
+import { getDownloadurl } from '@/utils/jellyfinUrls';
+import { toast } from 'sonner';
 
 const ItemAdminButton = ({
     item,
@@ -30,8 +33,26 @@ const ItemAdminButton = ({
     const deleteTriggerRef = useRef<HTMLButtonElement>(null);
     const subtitlesTriggerRef = useRef<HTMLButtonElement>(null);
     const editMetadataTriggerRef = useRef<HTMLButtonElement>(null);
+    const identifyTriggerRef = useRef<HTMLButtonElement>(null);
 
     if (currentUser?.Policy?.IsAdministrator !== true) return null;
+
+    const showIdentify = item.Type === 'Movie' || item.Type === 'Series';
+    const canStream = item.Type !== 'Series' && item.Type !== 'Season' && item.Type !== 'BoxSet' && item.Type !== 'MusicArtist' && item.Type !== 'Genre' && item.Type !== 'Playlist';
+
+    const handleCopyStreamLink = () => {
+        const streamUrl = getDownloadurl(item.Id || '');
+        if (streamUrl) {
+            void navigator.clipboard.writeText(streamUrl).then(() => {
+                toast.success(t('stream_link_copied', { defaultValue: 'Stream link copied to clipboard!' }));
+            }).catch((err) => {
+                console.error('Failed to copy stream link:', err);
+                toast.error(t('stream_link_error', { defaultValue: 'Could not copy stream link.' }));
+            });
+        } else {
+            toast.error(t('stream_link_error', { defaultValue: 'Could not copy stream link.' }));
+        }
+    };
 
     return (
         <>
@@ -50,6 +71,24 @@ const ItemAdminButton = ({
                         >
                             <Captions />
                             {t('subtitles')}
+                        </DropdownMenuItem>
+                    )}
+                    {showIdentify && (
+                        <DropdownMenuItem
+                            onClick={() => {
+                                setTimeout(() => identifyTriggerRef.current?.click(), 0);
+                            }}
+                        >
+                            <Search />
+                            {t('identify', { defaultValue: 'Identify' })}
+                        </DropdownMenuItem>
+                    )}
+                    {canStream && (
+                        <DropdownMenuItem
+                            onClick={handleCopyStreamLink}
+                        >
+                            <Link2 />
+                            {t('copy_stream_link', { defaultValue: 'Copy Stream Link' })}
                         </DropdownMenuItem>
                     )}
                     <DropdownMenuItem
@@ -92,6 +131,12 @@ const ItemAdminButton = ({
                     item={item}
                     trigger={<button ref={subtitlesTriggerRef} />}
                 />
+                {showIdentify && (
+                    <IdentifyDialog
+                        item={item}
+                        trigger={<button ref={identifyTriggerRef} />}
+                    />
+                )}
                 <ManageImageButton item={item} trigger={<button ref={manageImagesTriggerRef} />} />
                 <RefreshItemMetadataButton
                     item={item}

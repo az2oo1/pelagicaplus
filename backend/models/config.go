@@ -13,9 +13,16 @@ type AppConfig struct {
 	WatchedStateBadgeLibrary    *bool               `json:"watchedStateBadgeLibrary,omitempty"`
 	WatchedStateBadgeGenre      *bool               `json:"watchedStateBadgeGenre,omitempty"`
 	WatchedStateBadgeSearch     *bool               `json:"watchedStateBadgeSearch,omitempty"`
+	ShowContentAdvisory         *bool               `json:"showContentAdvisory,omitempty"`
+	ShowPauseOverlay            *bool               `json:"showPauseOverlay,omitempty"`
+	EnableBlur                  *bool               `json:"enableBlur,omitempty"`
+	ShowPosterTags              *bool               `json:"showPosterTags,omitempty"`
+	ShowGenreTags               *bool               `json:"showGenreTags,omitempty"`
+	TopBarBehavior              string              `json:"topBarBehavior,omitempty"`
 	ServerThemeId               string              `json:"serverThemeId,omitempty"`
 	ServerName                  string              `json:"serverName,omitempty"`
 	Links                       []ConfigLink        `json:"links,omitempty"`
+	SeerrUrl                    string              `json:"seerrUrl,omitempty"`
 }
 
 type ConfigLink struct {
@@ -38,7 +45,8 @@ type HomeScreenSection struct {
 	Size                string              `json:"size,omitempty"`
 
 	// RecentlyAdded
-	Limit *int `json:"limit,omitempty"`
+	Limit *int     `json:"limit,omitempty"`
+	Types []string `json:"types,omitempty"`
 
 	// Items section
 	AllLink      string        `json:"allLink,omitempty"`

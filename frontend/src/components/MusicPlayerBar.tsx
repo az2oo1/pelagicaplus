@@ -128,6 +128,7 @@ const MusicPlayerBar = () => {
                     <Button
                         variant="ghost"
                         size="icon"
+                        className="hover:scale-110 active:scale-90 transition-transform duration-200"
                         onClick={(e) => {
                             e.stopPropagation();
                             togglePlayPause();
@@ -200,28 +201,28 @@ const MusicPlayerBar = () => {
                         <Button
                             variant="ghost"
                             size="icon"
-                            className={shuffle ? 'text-brand' : 'text-muted-foreground'}
+                            className={cn("hover:scale-110 active:scale-90 transition-transform duration-200", shuffle ? 'text-brand' : 'text-muted-foreground')}
                             onClick={toggleShuffle}
                         >
                             <Shuffle />
                         </Button>
-                        <Button variant="ghost" size="icon-lg" onClick={skipPrevious}>
+                        <Button variant="ghost" size="icon-lg" className="hover:scale-110 active:scale-90 transition-transform duration-200" onClick={skipPrevious}>
                             <SkipBack className="h-8 w-8" />
                         </Button>
-                        <Button variant="default" size="icon-lg" onClick={togglePlayPause}>
+                        <Button variant="default" size="icon-lg" className="hover:scale-105 active:scale-95 transition-transform duration-200 ease-out" onClick={togglePlayPause}>
                             {isPlaying ? (
                                 <Pause className="h-8 w-8" />
                             ) : (
                                 <Play className="h-8 w-8" />
                             )}
                         </Button>
-                        <Button variant="ghost" size="icon-lg" onClick={skipNext}>
+                        <Button variant="ghost" size="icon-lg" className="hover:scale-110 active:scale-90 transition-transform duration-200" onClick={skipNext}>
                             <SkipForward className="h-8 w-8" />
                         </Button>
                         <Button
                             variant="ghost"
                             size="icon"
-                            className={repeat ? 'text-brand' : 'text-muted-foreground'}
+                            className={cn("hover:scale-110 active:scale-90 transition-transform duration-200", repeat ? 'text-brand' : 'text-muted-foreground')}
                             onClick={() => setRepeat(!repeat)}
                         >
                             <Repeat2 />
@@ -239,6 +240,7 @@ const MusicPlayerBar = () => {
                         <Button
                             variant="ghost"
                             size="icon"
+                            className="hover:scale-110 active:scale-90 transition-transform duration-200"
                             onClick={() => {
                                 if (volume === 0) setVolume(0.5);
                                 else setVolume(0);
@@ -284,7 +286,7 @@ const MusicPlayerBar = () => {
                             <Button
                                 variant="ghost"
                                 size="icon"
-                                className={`cursor-pointer ${shuffle ? 'text-brand' : 'text-muted-foreground'}`}
+                                className={cn("cursor-pointer hover:scale-110 active:scale-90 transition-transform duration-200", shuffle ? 'text-brand' : 'text-muted-foreground')}
                                 onClick={toggleShuffle}
                             >
                                 <Shuffle />
@@ -292,18 +294,18 @@ const MusicPlayerBar = () => {
                             <Button
                                 variant="ghost"
                                 size="icon"
-                                className="cursor-pointer"
+                                className="cursor-pointer hover:scale-110 active:scale-90 transition-transform duration-200"
                                 onClick={skipPrevious}
                             >
                                 <SkipBack />
                             </Button>
-                            <Button variant="default" size="icon-lg" onClick={togglePlayPause}>
+                            <Button variant="default" size="icon-lg" className="hover:scale-105 active:scale-95 transition-transform duration-200 ease-out cursor-pointer" onClick={togglePlayPause}>
                                 {isPlaying ? <Pause /> : <Play />}
                             </Button>
                             <Button
                                 variant="ghost"
                                 size="icon"
-                                className="cursor-pointer"
+                                className="cursor-pointer hover:scale-110 active:scale-90 transition-transform duration-200"
                                 onClick={skipNext}
                             >
                                 <SkipForward />
@@ -311,7 +313,7 @@ const MusicPlayerBar = () => {
                             <Button
                                 variant="ghost"
                                 size="icon"
-                                className={`cursor-pointer ${repeat ? 'text-brand' : 'text-muted-foreground'}`}
+                                className={cn("cursor-pointer hover:scale-110 active:scale-90 transition-transform duration-200", repeat ? 'text-brand' : 'text-muted-foreground')}
                                 onClick={() => setRepeat(!repeat)}
                             >
                                 <Repeat2 />
@@ -340,7 +342,7 @@ const MusicPlayerBar = () => {
                         <Button
                             variant="ghost"
                             size="icon"
-                            className="cursor-pointer"
+                            className="cursor-pointer hover:scale-110 active:scale-90 transition-transform duration-200"
                             onClick={() => {
                                 if (volume === 0) setVolume(0.5);
                                 else setVolume(0);
@@ -358,7 +360,7 @@ const MusicPlayerBar = () => {
                         <Button
                             variant="outline"
                             size="icon"
-                            className="cursor-pointer ml-2"
+                            className="cursor-pointer ml-2 hover:scale-105 active:scale-95 transition-transform duration-200 ease-out"
                             onClick={clearPlayback}
                         >
                             <XIcon />

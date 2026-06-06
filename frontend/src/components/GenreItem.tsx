@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { Link } from 'react-router';
 import { Skeleton } from './ui/skeleton';
 import { ImageOff } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 const GenreItem = ({
     genreWithItem,
@@ -15,21 +16,29 @@ const GenreItem = ({
     titleClassName?: string;
 }) => {
     const [posterError, setPosterError] = useState(false);
+    const [isHovered, setIsHovered] = useState(false);
     const posterUrl = getPrimaryImageUrl(genreWithItem.item?.Id || '');
 
     return (
         <Link
             to={`/item/${genreWithItem.id}`}
             key={genreWithItem.id}
-            className={`p-0 m-0 ${className || ''}`}
+            className={cn('p-0 m-0 group block cursor-pointer', className)}
+            onMouseEnter={() => setIsHovered(true)}
+            onMouseLeave={() => setIsHovered(false)}
         >
-            <div className={`relative w-full aspect-video overflow-hidden rounded-md group`}>
+            <div className="relative w-full aspect-video overflow-hidden rounded-md bg-muted">
                 {!posterError ? (
                     <>
                         <img
                             src={`${posterUrl}&maxWidth=416&maxHeight=640&quality=85`}
                             alt={genreWithItem.item?.Name || 'No Title'}
-                            className="absolute inset-0 w-full h-full object-cover transition-all group-hover:scale-105 group-hover:opacity-75 grayscale"
+                            className={cn(
+                                'absolute inset-0 w-full h-full object-cover transition-all duration-500 ease-out',
+                                isHovered
+                                    ? 'scale-108 grayscale-0 opacity-100'
+                                    : 'scale-100 grayscale opacity-80'
+                            )}
                             loading="lazy"
                             onError={() => setPosterError(true)}
                         />
@@ -42,25 +51,28 @@ const GenreItem = ({
                 )}
 
                 <div
-                    className="absolute inset-0 rounded-md z-10"
+                    className="absolute inset-0 rounded-md z-10 transition-all duration-500 ease-out"
                     style={{
                         backgroundColor: genreWithItem.tint,
-                        opacity: 0.35,
+                        opacity: isHovered ? 0.05 : 0.35,
                     }}
                 />
 
-                <div className="absolute inset-0 z-20 rounded-md bg-linear-to-t from-black/80 via-black/40 to-transparent" />
+                <div className="absolute inset-0 z-20 rounded-md bg-gradient-to-t from-black/90 via-black/30 to-transparent" />
 
-                <div className="absolute bottom-2 left-2 right-2 z-30">
+                <div className="absolute bottom-3 left-3 right-3 z-30">
                     <p
-                        className={
-                            titleClassName ||
-                            `text-2xl font-semibold text-gray-300 drop-shadow line-clamp-2`
-                        }
+                        className={cn(
+                            'text-xl sm:text-2xl font-bold text-white drop-shadow-md transition-transform duration-300 ease-out line-clamp-2',
+                            isHovered ? 'translate-x-1.5' : 'translate-x-0',
+                            titleClassName
+                        )}
                     >
                         {genreWithItem.name}
                     </p>
                 </div>
+
+                <div className="absolute inset-0 rounded-md pointer-events-none poster-card-outline z-40" />
             </div>
         </Link>
     );

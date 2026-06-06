@@ -39,7 +39,7 @@ const SourcePickerButton = ({
     const hasMultipleSources = (mediaSources?.length ?? 0) > 1;
 
     return (
-        <ButtonGroup className="relative inline-flex">
+        <ButtonGroup className="relative inline-flex hover:scale-105 active:scale-95 transition-transform duration-200 ease-out">
             <Button className={hasMultipleSources ? 'rounded-r-none w-min' : 'w-min'} asChild>
                 <Link to={`/play/${selectedSource?.Id ?? itemId}`}>
                     <Play />

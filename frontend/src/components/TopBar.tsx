@@ -66,6 +66,8 @@ import { Label } from '@/components/ui/label';
 import { useCurrentUser } from '@/hooks/api/useCurrentUser';
 import { useUserViews } from '@/hooks/api/useUserViews';
 import { useConfig } from '@/hooks/api/useConfig';
+import { getPassword, setPassword } from '@/utils/localstorageCredentials';
+import { Input } from '@/components/ui/input';
 import { useTheme } from '@/components/theme-provider';
 import { getEffectiveTheme } from '@/utils/effectiveTheme';
 import { logout } from '@/api/logout';
@@ -280,6 +282,8 @@ const UserMenu = () => {
         getLocalTheme() ?? LOCAL_THEME_SERVER_DEFAULT
     );
     const { data: themes, isLoading: isLoadingThemes } = useThemes();
+    const { config } = useConfig();
+    const [seerrPassword, setSeerrPasswordState] = useState(getPassword() || '');
 
     const onAuthorizeQuickConnect = (code: string) => {
         setQuickConnectLoading(true);
@@ -487,6 +491,23 @@ const UserMenu = () => {
                                 </SelectContent>
                             </Select>
                         </div>
+                        {config?.seerrUrl && (
+                            <div>
+                                <Label className="mb-2 text-sm font-medium">
+                                    Seerr Password
+                                </Label>
+                                <Input
+                                    type="password"
+                                    value={seerrPassword}
+                                    onChange={(e) => {
+                                        const pwd = e.target.value;
+                                        setSeerrPasswordState(pwd);
+                                        setPassword(pwd);
+                                    }}
+                                    placeholder="Your Jellyfin Password"
+                                />
+                            </div>
+                        )}
                     </DialogContent>
                 </Dialog>
 

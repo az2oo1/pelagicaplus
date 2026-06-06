@@ -37,6 +37,14 @@ const PelagicaThemeLoader = () => {
         };
     }, [config?.serverThemeId]);
 
+    useEffect(() => {
+        if (config?.enableBlur === false) {
+            document.documentElement.classList.add('no-blur');
+        } else {
+            document.documentElement.classList.remove('no-blur');
+        }
+    }, [config?.enableBlur]);
+
     return null;
 };
 

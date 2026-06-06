@@ -23,6 +23,11 @@ import {
     Clock,
     FolderOpen,
     Star,
+    Shuffle,
+    Award,
+    History,
+    Shield,
+    Play,
 } from 'lucide-react';
 import JellyfinLibraryIcon from '@/components/JellyfinLibraryIcon';
 import {
@@ -137,7 +142,7 @@ const LibraryContent = ({
                 <div className="w-full gap-4 mt-2 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-7 2xl:grid-cols-9">
                     {Array.from({ length: pageSize }).map((_, i) => (
                         <div key={i} className="p-0 m-0">
-                            <div className="relative w-full aspect-2/3 overflow-hidden rounded-md">
+                            <div className="relative w-full aspect-[2/3] overflow-hidden rounded-md">
                                 <Skeleton className="w-full h-full" />
                             </div>
                             <Skeleton className="mt-2 h-4 w-3/4" />
@@ -366,17 +371,37 @@ const LibraryPage = () => {
                                     <CaseSensitive />
                                     {t('sort_name')}
                                 </SelectItem>
-                                <SelectItem value="DateCreated">
-                                    <CalendarPlus />
-                                    {t('sort_date_added')}
-                                </SelectItem>
-                                <SelectItem value="PremiereDate">
-                                    <Calendar />
-                                    {t('sort_premiere_date')}
+                                <SelectItem value="Random">
+                                    <Shuffle />
+                                    {t('sort_random')}
                                 </SelectItem>
                                 <SelectItem value="CommunityRating">
                                     <Star />
                                     {t('sort_community_rating')}
+                                </SelectItem>
+                                <SelectItem value="CriticRating">
+                                    <Award />
+                                    {t('sort_critic_rating')}
+                                </SelectItem>
+                                <SelectItem value="DateCreated">
+                                    <CalendarPlus />
+                                    {t('sort_date_added')}
+                                </SelectItem>
+                                <SelectItem value="DateLastPlayed">
+                                    <History />
+                                    {t('sort_date_played')}
+                                </SelectItem>
+                                <SelectItem value="OfficialRating">
+                                    <Shield />
+                                    {t('sort_parental_rating')}
+                                </SelectItem>
+                                <SelectItem value="PlayCount">
+                                    <Play />
+                                    {t('sort_play_count')}
+                                </SelectItem>
+                                <SelectItem value="PremiereDate">
+                                    <Calendar />
+                                    {t('sort_premiere_date')}
                                 </SelectItem>
                                 <SelectItem value="Runtime">
                                     <Clock />

@@ -144,7 +144,10 @@
     "tv_db_box_id": "TVDB Box Set ID",
     "tv_db_id": "TVDB ID",
     "tv_db_slug_id": "TVDB Slug ID",
-
+    "identify": "Identify",
+    "copy_stream_link": "Copy Stream Link",
+    "stream_link_copied": "Stream link copied to clipboard!",
+    "stream_link_error": "Could not copy stream link.",
     "deleteItem": "Delete Item",
     "refresh_metadata_title": "Refresh metadata",
     "refresh_metadata_description": "Choose how to refresh metadata and images for this item.",
@@ -177,5 +180,12 @@
     "download": "Download",
     "original": "Original",
     "download_original_file": "Download original file",
-    "open_in_new_tab": "Open in new tab"
+    "open_in_new_tab": "Open in new tab",
+    "online_subtitles": "Online Subtitles",
+    "local_subtitles": "Local Subtitles",
+    "search_online_subtitles": "Search Online Subtitles",
+    "download_to_server": "Download to Server",
+    "downloading_to_server": "Downloading...",
+    "no_online_subtitles_found": "No online subtitles found.",
+    "download_success": "Subtitle downloaded successfully!"
 }

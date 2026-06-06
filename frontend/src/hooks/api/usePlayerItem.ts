@@ -16,7 +16,14 @@ export function usePlayerItem(
             const itemsApi = getItemsApi(api);
             const response = await itemsApi.getItems({
                 ids: [itemId!],
-                fields: ['ParentId', 'MediaStreams', 'ProductionLocations', 'Trickplay'],
+                fields: [
+                    'ParentId',
+                    'MediaStreams',
+                    'ProductionLocations',
+                    'Trickplay',
+                    'Overview',
+                    'Genres',
+                ],
                 enableUserData,
                 userId,
             });

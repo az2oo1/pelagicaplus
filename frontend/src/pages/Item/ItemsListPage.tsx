@@ -9,11 +9,15 @@ import {
     CaseSensitive,
     Clock,
     Star,
-    ImageOff,
+    Shuffle,
+    Award,
+    History,
+    Shield,
+    Play,
 } from 'lucide-react';
 import { type ReactNode, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Link, useSearchParams } from 'react-router';
+import { useSearchParams } from 'react-router';
 import ItemPagination from '@/components/ItemPagination';
 import {
     Select,
@@ -23,7 +27,7 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 import { ButtonGroup } from '@/components/ui/button-group';
-import { useMusicPlayback } from '@/hooks/useMusicPlayback';
+import LibraryItem from '../Library/LibraryItem';
 
 const ITEM_ROWS = 5;
 const DEFAULT_SORT_BY: ItemSortBy = 'Name';
@@ -62,74 +66,6 @@ export interface ItemsQueryResult {
  */
 export type UseItemsHook = (id: string, params: ItemsQueryParams) => ItemsQueryResult;
 
-interface ItemDisplayProps {
-    item: BaseItemDto;
-    aspectClass: string;
-    /** Optional overlay, e.g. a WatchedStateBadge */
-    overlay?: ReactNode;
-}
-
-const ItemDisplay = ({ item, aspectClass, overlay }: ItemDisplayProps) => {
-    const { t } = useTranslation('item');
-    const { loadQueue } = useMusicPlayback();
-    const [posterError, setPosterError] = useState(false);
-    const targetImageId = item.Type === 'Audio' && item.AlbumId ? item.AlbumId : item.Id!;
-    const targetImageTag = item.Type === 'Audio' && item.AlbumId ? undefined : item.ImageTags?.Primary;
-
-    const handleClick = (e: React.MouseEvent) => {
-        if (item.Type === 'Audio') {
-            e.preventDefault();
-            loadQueue([
-                {
-                    id: item.Id || '',
-                    title: item.Name || '',
-                    artist: item.AlbumArtist || (item.Artists && item.Artists[0]) || 'Unknown',
-                    albumId: item.AlbumId || '',
-                    albumName: item.Album || '',
-                }
-            ], 0, true);
-        }
-    };
-
-    return (
-        <Link
-            to={`/item/${item.Id}`}
-            key={item.Id}
-            className="p-0 m-0"
-            onClick={handleClick}
-        >
-            <div className={`relative w-full ${aspectClass} overflow-hidden rounded-md group`}>
-                {!posterError ? (
-                    <>
-                        <img
-                            key={item.Id}
-                            src={getPrimaryImageUrl(targetImageId, undefined, targetImageTag)}
-                            alt={item.Name || t('library:no_title')}
-                            className="w-full h-full object-cover rounded-md group-hover:opacity-75 transition-all group-hover:scale-105 z-10"
-                            loading="lazy"
-                            onError={() => setPosterError(true)}
-                        />
-                        <Skeleton className="absolute bottom-0 left-0 right-0 top-0 -z-1" />
-                    </>
-                ) : (
-                    <div className="w-full h-full bg-muted flex items-center justify-center rounded-md">
-                        <ImageOff className="text-4xl text-muted-foreground" />
-                    </div>
-                )}
-                {overlay}
-            </div>
-            <p className="mt-2 text-sm line-clamp-1 text-ellipsis break-all">
-                {item.Name || t('library:no_title')}
-            </p>
-            {item.PremiereDate && (
-                <span className="text-xs text-muted-foreground line-clamp-1">
-                    {new Date(item.PremiereDate).getFullYear()}
-                </span>
-            )}
-        </Link>
-    );
-};
-
 export interface ItemsListPageProps {
     /** The parent item (genre, studio, etc.) — used for id + title */
     item: BaseItemDto;
@@ -141,20 +77,24 @@ export interface ItemsListPageProps {
     listTitle?: string;
     /** Optional render prop to overlay something on each poster (e.g. WatchedStateBadge) */
     renderItemOverlay?: (item: BaseItemDto) => ReactNode;
+    defaultSortBy?: ItemSortBy;
+    defaultSortOrder?: SortOrder;
 }
 
 const ItemsListPage = ({
     item,
     useItems,
-    itemAspectClass = 'aspect-2/3',
+    itemAspectClass = 'aspect-[2/3]',
     listTitle,
     renderItemOverlay,
+    defaultSortBy,
+    defaultSortOrder,
 }: ItemsListPageProps) => {
     const { t } = useTranslation(['item', 'library']);
     const [searchParams, setSearchParams] = useSearchParams();
     const pageParam = parseInt(searchParams.get('page') ?? '0', 10);
-    const sortByParam = (searchParams.get('sortBy') as ItemSortBy) || DEFAULT_SORT_BY;
-    const sortOrderParam = (searchParams.get('sortOrder') as SortOrder) || DEFAULT_SORT_ORDER;
+    const sortByParam = (searchParams.get('sortBy') as ItemSortBy) || defaultSortBy || DEFAULT_SORT_BY;
+    const sortOrderParam = (searchParams.get('sortOrder') as SortOrder) || defaultSortOrder || DEFAULT_SORT_ORDER;
     const [page, setPage] = useState<number>(Number.isNaN(pageParam) ? 0 : pageParam);
     const [sortBy, setSortBy] = useState<ItemSortBy>(sortByParam);
     const [sortOrder, setSortOrder] = useState<SortOrder>(sortOrderParam);
@@ -167,11 +107,11 @@ const ItemsListPage = ({
         nextSortBy = sortBy,
         nextSortOrder = sortOrder
     ) => {
-        setSearchParams({
-            page: String(nextPage),
-            sortBy: nextSortBy,
-            sortOrder: nextSortOrder,
-        });
+        const nextParams = new URLSearchParams(searchParams);
+        nextParams.set('page', String(nextPage));
+        nextParams.set('sortBy', nextSortBy);
+        nextParams.set('sortOrder', nextSortOrder);
+        setSearchParams(nextParams);
     };
 
     useEffect(() => {
@@ -233,17 +173,37 @@ const ItemsListPage = ({
                                 <CaseSensitive />
                                 {t('library:sort_name')}
                             </SelectItem>
-                            <SelectItem value="DateCreated">
-                                <CalendarPlus />
-                                {t('library:sort_date_added')}
-                            </SelectItem>
-                            <SelectItem value="PremiereDate">
-                                <Calendar />
-                                {t('library:sort_premiere_date')}
+                            <SelectItem value="Random">
+                                <Shuffle />
+                                {t('library:sort_random')}
                             </SelectItem>
                             <SelectItem value="CommunityRating">
                                 <Star />
                                 {t('library:sort_community_rating')}
+                            </SelectItem>
+                            <SelectItem value="CriticRating">
+                                <Award />
+                                {t('library:sort_critic_rating')}
+                            </SelectItem>
+                            <SelectItem value="DateCreated">
+                                <CalendarPlus />
+                                {t('library:sort_date_added')}
+                            </SelectItem>
+                            <SelectItem value="DateLastPlayed">
+                                <History />
+                                {t('library:sort_date_played')}
+                            </SelectItem>
+                            <SelectItem value="OfficialRating">
+                                <Shield />
+                                {t('library:sort_parental_rating')}
+                            </SelectItem>
+                            <SelectItem value="PlayCount">
+                                <Play />
+                                {t('library:sort_play_count')}
+                            </SelectItem>
+                            <SelectItem value="PremiereDate">
+                                <Calendar />
+                                {t('library:sort_premiere_date')}
                             </SelectItem>
                             <SelectItem value="Runtime">
                                 <Clock />
@@ -295,10 +255,27 @@ const ItemsListPage = ({
                 <>
                     <ul className={`gw-full gap-4 grid ${gridCols}`}>
                         {items?.items?.map((child) => (
-                            <ItemDisplay
+                            <LibraryItem
                                 key={child.Id}
                                 item={child}
-                                aspectClass={itemAspectClass}
+                                posterUrl={getPrimaryImageUrl(
+                                    (child.Type === 'Episode' ? child.SeriesPrimaryImageTag || child.Id : child.Id) || '',
+                                    undefined,
+                                    (child.Type === 'Episode' ? child.SeriesPrimaryImageTag || undefined : child.ImageTags?.Primary) || undefined
+                                )}
+                                t={t}
+                                posterAspectRatio={
+                                    child.Type === 'MusicAlbum' ||
+                                    child.Type === 'Audio' ||
+                                    child.Type === 'MusicArtist'
+                                        ? 'square'
+                                        : itemAspectClass.replace('aspect-', '').replace('[', '').replace(']', '').replace('/', '/')
+                                }
+                                detailLine={
+                                    child.PremiereDate ? (
+                                        <span>{new Date(child.PremiereDate).getFullYear()}</span>
+                                    ) : undefined
+                                }
                                 overlay={renderItemOverlay?.(child)}
                             />
                         ))}

@@ -71,6 +71,9 @@ import {
     SelectLabel,
 } from '@/components/ui/select';
 import { useThemes } from '@/hooks/api/themes/useThemes';
+import { useConfig } from '@/hooks/api/useConfig';
+import { getPassword, setPassword } from '@/utils/localstorageCredentials';
+import { Input } from '@/components/ui/input';
 
 const FlagIcon = ({ countryCode }: { countryCode: string }) => {
     const flagUrl = `https://flagcdn.com/${countryCode.toLowerCase()}.svg`;
@@ -284,6 +287,8 @@ export function NavUser() {
         getLocalTheme() ?? LOCAL_THEME_SERVER_DEFAULT
     );
     const { data: themes, isLoading: isLoadingThemes } = useThemes();
+    const { config } = useConfig();
+    const [seerrPassword, setSeerrPasswordState] = useState(getPassword() || '');
 
     const onAuthorizeQuickConnect = (code: string) => {
         setAuthorizeQuickConnectLoading(true);
@@ -536,6 +541,23 @@ export function NavUser() {
                                         </SelectContent>
                                     </Select>
                                 </div>
+                                {config?.seerrUrl && (
+                                    <div>
+                                        <Label className="mb-2 text-sm font-medium">
+                                            Seerr Password
+                                        </Label>
+                                        <Input
+                                            type="password"
+                                            value={seerrPassword}
+                                            onChange={(e) => {
+                                                const pwd = e.target.value;
+                                                setSeerrPasswordState(pwd);
+                                                setPassword(pwd);
+                                            }}
+                                            placeholder="Your Jellyfin Password"
+                                        />
+                                    </div>
+                                )}
                             </DialogContent>
                         </Dialog>
                         <DropdownMenuSeparator />

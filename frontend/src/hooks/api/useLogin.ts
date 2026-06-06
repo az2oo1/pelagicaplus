@@ -25,7 +25,7 @@ export function useLogin() {
             const accessToken = res.data.AccessToken || '';
             const userId = res.data.User?.Id || '';
 
-            saveCredentials(server, userId, accessToken);
+            saveCredentials(server, userId, accessToken, username, password);
 
             return { api, user: res.data.User };
         },
