@@ -5,7 +5,7 @@ on:
     types: [published]
 
 env:
-  DOCKER_IMAGE: ${{ secrets.DOCKERHUB_USERNAME }}/pelagica
+  DOCKER_IMAGE: kartoffelchipss/pelagica
 
 permissions:
   contents: read

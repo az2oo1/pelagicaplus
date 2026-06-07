@@ -1,13 +1,11 @@
 services:
     pelagica:
-        build:
-            context: .
-            dockerfile: Dockerfile
+        image: kartoffelchipss/pelagica:latest
         container_name: pelagica
         ports:
             - '8080:80'
         volumes:
-            - ./config:/config
+            - /path/to/your/config:/config
         restart: unless-stopped
         healthcheck:
             test:
@@ -16,3 +14,16 @@ services:
             timeout: 10s
             retries: 3
             start_period: 40s
+
+# --- For developers: build from source instead ---
+# services:
+#     pelagica:
+#         build:
+#             context: .
+#             dockerfile: Dockerfile
+#         container_name: pelagica
+#         ports:
+#             - '8080:80'
+#         volumes:
+#             - ./config:/config
+#         restart: unless-stopped
