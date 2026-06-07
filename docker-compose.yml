@@ -1,6 +1,6 @@
 services:
     pelagica:
-        image: kartoffelchipss/pelagica:latest
+        image: ghcr.io/kartoffelchipss/pelagica:latest
         container_name: pelagica
         ports:
             - '8080:80'
