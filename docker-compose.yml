@@ -1,9 +1,9 @@
 services:
-    pelagica:
-        image: ghcr.io/kartoffelchipss/pelagica:latest
-        container_name: pelagica
+    pelagicaplus:
+        image: ghcr.io/az2oo1/pelagicaplus:latest
+        container_name: pelagicaplus
         ports:
-            - '8080:80'
+            - '3010:80'
         volumes:
             - /path/to/your/config:/config
         restart: unless-stopped

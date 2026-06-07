@@ -44,6 +44,7 @@ COPY --from=frontend-builder /app/dist /usr/share/nginx/html
 # backend
 COPY --from=backend-builder /backend/server /server
 COPY --from=backend-builder /backend/default.theme.json /default.theme.json
+COPY --from=backend-builder /backend/assets /assets
 
 # nginx config
 COPY nginx.conf /etc/nginx/conf.d/default.conf
@@ -66,6 +67,9 @@ ENV COLLECTOR_INSTANCE_ID_FILE=/config/instance_id
 ENV COLLECTOR_STATS_CONSENT_FILE=/config/stats_consent
 
 EXPOSE 80
+
+# Set workdir so the backend can resolve assets/ relative paths
+WORKDIR /
 
 # start backend + nginx
 CMD ["/bin/sh", "-c", "exec /server & exec nginx -g 'daemon off;'"]
