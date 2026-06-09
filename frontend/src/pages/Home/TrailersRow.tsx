@@ -8,6 +8,14 @@ import { Link } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import type { BaseItemDto } from '@jellyfin/sdk/lib/generated-client/models';
 
+function getTrailerUrl(item: BaseItemDto): string {
+    const stored = item.RemoteTrailers?.[0]?.Url;
+    if (stored) return stored;
+    const year = item.ProductionYear ?? (item.PremiereDate ? new Date(item.PremiereDate).getFullYear() : '');
+    const query = `${item.Name ?? ''} ${year} trailer deutsch`;
+    return `https://www.youtube.com/results?search_query=${encodeURIComponent(query)}`;
+}
+
 interface TrailerCardProps {
     item: BaseItemDto;
     trailerUrl: string;
@@ -87,7 +95,7 @@ const TrailersRow = ({ title, limit = 20, types = ['Movie'] }: TrailersRowProps)
                           <TrailerCard
                               key={item.Id}
                               item={item}
-                              trailerUrl={item.RemoteTrailers?.[0]?.Url || ''}
+                              trailerUrl={getTrailerUrl(item)}
                           />
                       ))
                     : Array.from({ length: 5 }).map((_, i) => (

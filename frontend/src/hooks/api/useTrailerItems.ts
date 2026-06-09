@@ -24,14 +24,12 @@ export function useTrailerItems(options?: TrailerItemsOptions) {
                 recursive: true,
                 sortBy: ['PremiereDate'],
                 sortOrder: ['Descending'],
-                limit: limit * 4,
+                limit,
                 fields: ['RemoteTrailers'],
                 locationTypes: ['FileSystem'],
             });
 
-            return (response.data.Items || [])
-                .filter(item => item.RemoteTrailers && item.RemoteTrailers.length > 0)
-                .slice(0, limit);
+            return response.data.Items || [];
         },
         ...getRetryConfig(),
     });
