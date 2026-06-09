@@ -1,6 +1,6 @@
 services:
     pelagicaplus:
-        image: ghcr.io/az2oo1/pelagicaplus:latest
+        image: ghcr.io/jxstn0501/pelagicaplusfork:latest
         container_name: pelagicaplus
         ports:
             - '3010:80'
