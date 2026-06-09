@@ -150,6 +150,14 @@ export interface StudiosSection extends BaseHomeScreenSection {
     limit?: number;
 }
 
+export interface TrailersSection extends BaseHomeScreenSection {
+    type: 'trailers';
+    /** Maximum number of trailers to display */
+    limit?: number;
+    /** Filter by media type */
+    types?: ('Movie' | 'Series')[];
+}
+
 export interface GenreRecommendedSection extends BaseHomeScreenSection {
     type: 'genreRecommended';
     /** How many genres to show as rows */
@@ -173,7 +181,8 @@ export type HomeScreenSection =
     | GenresSection
     | LibrariesSection
     | StudiosSection
-    | GenreRecommendedSection;
+    | GenreRecommendedSection
+    | TrailersSection;
 
 export const EPISODE_DISPLAYS = ['grid', 'row'] as const;
 export type EpisodeDisplay = (typeof EPISODE_DISPLAYS)[number];
@@ -302,6 +311,11 @@ const DEFAULT_CONFIG: AppConfig = {
             detailLine: ['TimeRemaining'],
             accurateSorting: true,
             limit: 20,
+        },
+        {
+            type: 'trailers',
+            limit: 20,
+            types: ['Movie'],
         },
         {
             type: 'items',

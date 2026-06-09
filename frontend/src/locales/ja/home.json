@@ -20,5 +20,6 @@
     "rating_unavailable": "評価なし",
     "duration_unknown": "不明な期間",
     "not_available": "N/A",
-    "not_rated": "未評価"
+    "not_rated": "未評価",
+    "trailers": "予告編"
 }
