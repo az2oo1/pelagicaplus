@@ -63,6 +63,11 @@ type HomeScreenSection struct {
 	RecommendationType RecommendationTypeFilter `json:"recommendationType,omitempty"`
 	ShowBasedOn        *bool                    `json:"showBasedOn,omitempty"`
 	ShowSimilarity     *bool                    `json:"showSimilarity,omitempty"`
+
+	// GenreRecommended
+	GenreLimit *int     `json:"genreLimit,omitempty"`
+	MediaType  string   `json:"mediaType,omitempty"`
+	SortBy     []string `json:"sortBy,omitempty"`
 }
 
 type ItemPageSettings struct {
@@ -108,7 +113,8 @@ const (
 	SectionContinue      = "continueWatching"
 	SectionNextUp        = "nextUp"
 	SectionResume        = "resume"
-	SectionRecommended   = "streamystatsRecommended"
-	SectionGenres        = "genres"
-	SectionLibraries     = "libraries"
+	SectionRecommended        = "streamystatsRecommended"
+	SectionGenreRecommended   = "genreRecommended"
+	SectionGenres             = "genres"
+	SectionLibraries          = "libraries"
 )

@@ -6,6 +6,7 @@ import ItemsRow from './ItemsRow';
 import ContinueWatchingRow from './ContinueWatchingRow';
 import { useTranslation } from 'react-i18next';
 import RecommendedItemsRow from './RecommendedItemsRow';
+import GenreRecommendedRows from './GenreRecommendedRows';
 import NextUpRow from './NextUpRow';
 import ResumeRow from './ResumeRow';
 import type { CollectionType } from '@jellyfin/sdk/lib/generated-client/models';
@@ -208,6 +209,17 @@ const HomePage = () => {
                                         showBasedOn={section.showBasedOn}
                                     />
                                 </LazyRow>
+                            );
+
+                        case 'genreRecommended':
+                            return (
+                                <GenreRecommendedRows
+                                    key={index}
+                                    genreLimit={section.genreLimit}
+                                    limit={section.limit ?? undefined}
+                                    mediaType={section.mediaType}
+                                    sortBy={section.sortBy}
+                                />
                             );
 
                         case 'genres':

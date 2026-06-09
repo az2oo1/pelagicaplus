@@ -150,6 +150,18 @@ export interface StudiosSection extends BaseHomeScreenSection {
     limit?: number;
 }
 
+export interface GenreRecommendedSection extends BaseHomeScreenSection {
+    type: 'genreRecommended';
+    /** How many genres to show as rows */
+    genreLimit?: number;
+    /** Items per genre row */
+    limit?: number;
+    /** Filter by media type */
+    mediaType?: 'Movie' | 'Series' | 'all';
+    /** Sort field for items within each genre */
+    sortBy?: ItemSortBy[];
+}
+
 export type HomeScreenSection =
     | MediaBarSection
     | RecentlyAddedSection
@@ -160,7 +172,8 @@ export type HomeScreenSection =
     | ResumeSection
     | GenresSection
     | LibrariesSection
-    | StudiosSection;
+    | StudiosSection
+    | GenreRecommendedSection;
 
 export const EPISODE_DISPLAYS = ['grid', 'row'] as const;
 export type EpisodeDisplay = (typeof EPISODE_DISPLAYS)[number];
@@ -307,6 +320,22 @@ const DEFAULT_CONFIG: AppConfig = {
             },
         },
         {
+            type: 'streamystatsRecommended',
+            title: 'Recommended Movies',
+            recommendationType: 'Movie',
+            limit: 20,
+            showSimilarity: true,
+            showBasedOn: false,
+        },
+        {
+            type: 'streamystatsRecommended',
+            title: 'Recommended Series',
+            recommendationType: 'Series',
+            limit: 20,
+            showSimilarity: true,
+            showBasedOn: false,
+        },
+        {
             type: 'studios',
             title: 'Studios',
             limit: 20,
@@ -343,6 +372,68 @@ const DEFAULT_CONFIG: AppConfig = {
                 types: ['Movie'],
             },
             detailFields: ['ReleaseYearAndMonth'],
+        },
+        {
+            type: 'items',
+            title: 'Recently Released Series',
+            items: {
+                sortBy: ['PremiereDate'],
+                sortOrder: 'Descending',
+                limit: 10,
+                types: ['Series'],
+            },
+            detailFields: ['ReleaseYearAndMonth'],
+        },
+        {
+            type: 'items',
+            title: 'Top Rated Movies',
+            items: {
+                sortBy: ['CommunityRating'],
+                sortOrder: 'Descending',
+                limit: 10,
+                types: ['Movie'],
+            },
+            detailFields: ['CommunityRating'],
+        },
+        {
+            type: 'items',
+            title: 'Top Rated Series',
+            items: {
+                sortBy: ['CommunityRating'],
+                sortOrder: 'Descending',
+                limit: 10,
+                types: ['Series'],
+            },
+            detailFields: ['CommunityRating'],
+        },
+        {
+            type: 'items',
+            title: 'Popular Movies',
+            items: {
+                sortBy: ['PlayCount'],
+                sortOrder: 'Descending',
+                limit: 10,
+                types: ['Movie'],
+            },
+            detailFields: ['ReleaseYear'],
+        },
+        {
+            type: 'items',
+            title: 'Popular Series',
+            items: {
+                sortBy: ['PlayCount'],
+                sortOrder: 'Descending',
+                limit: 10,
+                types: ['Series'],
+            },
+            detailFields: ['ReleaseYear'],
+        },
+        {
+            type: 'genreRecommended',
+            genreLimit: 5,
+            limit: 10,
+            mediaType: 'all',
+            sortBy: ['CommunityRating'],
         },
         {
             type: 'recentlyAdded',
