@@ -7,7 +7,6 @@ import ContinueWatchingRow from './ContinueWatchingRow';
 import { useTranslation } from 'react-i18next';
 import RecommendedItemsRow from './RecommendedItemsRow';
 import GenreRecommendedRows from './GenreRecommendedRows';
-import TrailersRow from './TrailersRow';
 import NextUpRow from './NextUpRow';
 import ResumeRow from './ResumeRow';
 import type { CollectionType } from '@jellyfin/sdk/lib/generated-client/models';
@@ -208,17 +207,6 @@ const HomePage = () => {
                                         limit={section.limit}
                                         showSimilarity={section.showSimilarity}
                                         showBasedOn={section.showBasedOn}
-                                    />
-                                </LazyRow>
-                            );
-
-                        case 'trailers':
-                            return (
-                                <LazyRow key={index} placeholderHeight="320px">
-                                    <TrailersRow
-                                        title={section.title}
-                                        limit={section.limit}
-                                        types={section.types as ('Movie' | 'Series')[]}
                                     />
                                 </LazyRow>
                             );
