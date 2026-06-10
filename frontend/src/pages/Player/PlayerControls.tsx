@@ -38,6 +38,7 @@ import { formatPlayTime, ticksToReadableTime, ticksToSeconds, getEndsAt } from '
 import { useTranslation } from 'react-i18next';
 import { usePlayerKeyboardControls } from '@/hooks/usePlayerKeyboardControls';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import NextEpisodeOverlay from '@/components/NextEpisodeOverlay';
 import { getPrimaryImageUrl, getTrickplayImageUrl, getLogoUrl, getItemImageUrl } from '@/utils/jellyfinUrls';
 import { useReportPlaybackProgress } from '@/hooks/api/usePlaybackProgress';
 import { getRuntimePlaybackStats, type RuntimePlaybackStats } from '@/utils/playbackStats';
@@ -545,63 +546,16 @@ const PlayerControls = ({
                     </Button>
                 )}
                 {showNextItemPrompt && (
-                    <Card className="gap-2 w-60 md:w-80">
-                        <CardHeader>
-                            <CardTitle className="text-xl sm:text-2xl">
-                                {t('upNext', {
-                                    seconds: timeRemaining.toFixed(0),
-                                })}
-                            </CardTitle>
-                        </CardHeader>
-                        <CardContent className="flex flex-col">
-                            <img
-                                src={getPrimaryImageUrl(nextItem.Id!, {
-                                    height: 180,
-                                    width: 320,
-                                })}
-                                alt={nextItem.Name || 'Next item poster'}
-                                className="w-full h-auto rounded mb-3 hidden sm:block"
-                            />
-                            <div className="flex items-center">
-                                <p>
-                                    {t('seasonEpisode', {
-                                        season: nextItem.ParentIndexNumber,
-                                        episode: nextItem.IndexNumber,
-                                    })}{' '}
-                                    ⋅ {nextItem.Name}
-                                </p>
-                            </div>
-                            <div className="flex items-center text-muted-foreground text-xs mb-3">
-                                <p>{ticksToReadableTime(nextItem.RunTimeTicks || 0)}</p>
-                                <Dot />
-                                <p>Ends at {formatPlayTime(duration)}</p>
-                            </div>
-                            <div className="flex items-center gap-2 w-full">
-                                <Button
-                                    variant={'default'}
-                                    className="flex-1"
-                                    onClick={() => {
-                                        if (!player || !nextItem) return;
-                                        player.pause();
-                                        markItemAsCompleted(item.Id);
-                                        navigate(`/play/${nextItem.Id}`);
-                                    }}
-                                >
-                                    <SkipForward />
-                                    {t('startNow')}
-                                </Button>
-                                <Button
-                                    variant={'outline'}
-                                    className="flex-1"
-                                    onClick={() => {
-                                        setDismissedNextItemPrompt(true);
-                                    }}
-                                >
-                                    {t('dismiss')}
-                                </Button>
-                            </div>
-                        </CardContent>
-                    </Card>
+                    <NextEpisodeOverlay
+                        nextItem={nextItem}
+                        onPlay={() => {
+                            if (!player || !nextItem) return;
+                            player.pause();
+                            markItemAsCompleted(item.Id);
+                            navigate(`/play/${nextItem.Id}`);
+                        }}
+                        onDismiss={() => setDismissedNextItemPrompt(true)}
+                    />
                 )}
             </div>
             <div

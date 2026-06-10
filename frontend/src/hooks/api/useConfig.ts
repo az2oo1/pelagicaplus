@@ -170,6 +170,12 @@ export interface GenreRecommendedSection extends BaseHomeScreenSection {
     sortBy?: ItemSortBy[];
 }
 
+export interface MoodBarSection extends BaseHomeScreenSection {
+    type: 'moodBar';
+    /** Maximum number of items to display per mood */
+    limit?: number;
+}
+
 export type HomeScreenSection =
     | MediaBarSection
     | RecentlyAddedSection
@@ -182,7 +188,8 @@ export type HomeScreenSection =
     | LibrariesSection
     | StudiosSection
     | GenreRecommendedSection
-    | TrailersSection;
+    | TrailersSection
+    | MoodBarSection;
 
 export const EPISODE_DISPLAYS = ['grid', 'row'] as const;
 export type EpisodeDisplay = (typeof EPISODE_DISPLAYS)[number];
@@ -313,9 +320,8 @@ const DEFAULT_CONFIG: AppConfig = {
             limit: 20,
         },
         {
-            type: 'trailers',
+            type: 'moodBar',
             limit: 20,
-            types: ['Movie'],
         },
         {
             type: 'items',
