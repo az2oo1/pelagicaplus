@@ -79,7 +79,7 @@ export const SpatialNavigation = () => {
                     homeBtn.scrollIntoView({
                         behavior: 'smooth',
                         block: 'center',
-                        inline: 'center',
+                        inline: 'start',
                     });
                     lastMoveTime = now;
                 }
@@ -157,14 +157,27 @@ export const SpatialNavigation = () => {
                 const element = bestCandidate as HTMLElement;
                 element.focus({ preventScroll: true });
                 
-                // For horizontal navigation, keep vertical block scroll at 'nearest' to avoid page jitter.
-                // For vertical navigation (up/down), use 'center' to position the focused row in the middle of the viewport.
                 const isHorizontal = ['ArrowLeft', 'ArrowRight'].includes(direction);
-                element.scrollIntoView({
-                    behavior: 'smooth',
-                    block: isHorizontal ? 'nearest' : 'center',
-                    inline: 'center',
-                });
+                const inHeader = element.closest('header') !== null;
+
+                if (inHeader) {
+                    element.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'nearest',
+                        inline: 'nearest',
+                    });
+                } else {
+                    const parent = element.parentElement;
+                    if (parent && element === parent.firstElementChild) {
+                        parent.scrollTo({ left: 0, behavior: 'smooth' });
+                    } else {
+                        element.scrollIntoView({
+                            behavior: 'smooth',
+                            block: isHorizontal ? 'nearest' : 'center',
+                            inline: 'start',
+                        });
+                    }
+                }
                 lastMoveTime = now;
             }
         };
