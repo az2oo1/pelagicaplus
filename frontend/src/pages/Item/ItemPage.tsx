@@ -17,7 +17,7 @@ import GenrePage from './GenrePage';
 import type { BaseItemKind } from '@jellyfin/sdk/lib/generated-client/models';
 import MusicArtistPage from './MusicArtistPage';
 
-const ItemPageSkeleton = memo(() => {
+const ItemPageSkeleton = memo(({ isSquare = false }: { isSquare?: boolean }) => {
     return (
         <div className="relative h-full w-full">
             {/* Backdrop skeleton */}
@@ -28,7 +28,7 @@ const ItemPageSkeleton = memo(() => {
                 <div className="flex flex-col lg:flex-row gap-8 lg:gap-12 items-start relative z-10 w-full animate-pulse">
                     {/* Left Column (Poster) */}
                     <div className="w-48 sm:w-64 md:w-72 lg:w-80 shrink-0 mx-auto lg:mx-0">
-                        <div className="relative aspect-[2/3] w-full rounded-xl overflow-hidden shadow-2xl shadow-black/85 border border-white/10 bg-muted">
+                        <div className={`relative w-full rounded-xl overflow-hidden shadow-2xl shadow-black/85 border border-white/10 bg-muted ${isSquare ? 'aspect-square' : 'aspect-[2/3]'}`}>
                             <Skeleton className="absolute inset-0 w-full h-full rounded-xl" />
                         </div>
                     </div>
@@ -82,7 +82,7 @@ const ItemPageSkeleton = memo(() => {
 
 ItemPageSkeleton.displayName = 'ItemPageSkeleton';
 
-const FULL_PAGE_ITEM_TYPES: BaseItemKind[] = ['Movie', 'Series', 'Episode', 'Season', 'BoxSet'];
+const FULL_PAGE_ITEM_TYPES: BaseItemKind[] = ['Movie', 'Series', 'Episode', 'Season', 'BoxSet', 'MusicAlbum'];
 
 const REDIRECT_ITEM_TYPES: Partial<Record<BaseItemKind, string>> = {
     Person: '/person',
@@ -111,7 +111,7 @@ const ItemPage = () => {
             overlayHeader={isFullPageItem}
             pagePadding={!isFullPageItem}
         >
-            {(isLoading || configLoading) && <ItemPageSkeleton />}
+            {(isLoading || configLoading) && <ItemPageSkeleton isSquare={item?.Type === 'MusicAlbum' || item?.Type === 'MusicArtist'} />}
             {error && <p>Error loading item details.</p>}
             {item &&
                 (() => {

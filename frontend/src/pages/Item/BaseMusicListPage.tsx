@@ -4,6 +4,8 @@ import { usePageBackground } from '@/hooks/usePageBackground';
 import { Link } from 'react-router';
 import { ticksToReadableMusicTime, ticksToReadableTime } from '@/utils/timeConversion';
 import { Button } from '@/components/ui/button';
+import BaseMediaPage from './BaseMediaPage';
+import { Badge } from '@/components/ui/badge';
 import { EllipsisVertical, ImageOff, Info, ListMusic, Play } from 'lucide-react';
 import FavoriteButton from '@/components/FavoriteButton';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -232,42 +234,53 @@ const BaseMusicListPage = ({ item, config, listType }: BaseMusicListPageProps) =
     };
 
     return (
-        <div className="relative h-full w-full">
-            <div className={`relative z-10`}>
-                <div
-                    className={`bg-background/30 backdrop-blur-md p-4 sm:p-8 rounded-md w-full flex flex-col gap-4`}
-                >
-                    <div className="flex justify-start items-end-safe gap-4 w-full">
-                        {!failedCover ? (
-                            <img
-                                src={getPrimaryImageUrl(
-                                    item.Id!,
-                                    undefined,
-                                    item.ImageTags?.Primary
-                                )}
-                                alt={item.Name + ' Cover'}
-                                className="relative w-32 h-32 object-contain rounded-md"
-                                onError={() => setFailedCover(true)}
-                            />
-                        ) : (
-                            <div className="relative w-32 h-32 bg-muted flex items-center justify-center rounded-md">
-                                <ImageOff className="text-muted-foreground" size={32} />
-                            </div>
-                        )}
-                        <div className="flex flex-col gap-0">
-                            <span className="text-sm text-muted-foreground">{listType}</span>
-                            <h1 className="text-3xl font-bold">{item.Name}</h1>
+        <BaseMediaPage itemId={item.Id || ''} name={item.Name || ''} showLogo={false} topPadding={false}>
+            <div className="pt-24 sm:pt-32 pb-12 px-4 sm:px-12 max-w-7xl mx-auto w-full flex flex-col gap-12">
+                <div className="flex flex-col lg:flex-row gap-8 lg:gap-12 items-start relative z-10 w-full">
+                    {/* Left Column (Cover) */}
+                    <div className="w-48 sm:w-64 shrink-0 mx-auto lg:mx-0">
+                        <div className="relative aspect-square w-full rounded-xl overflow-hidden shadow-2xl shadow-black/85 border border-white/10 bg-muted flex items-center justify-center">
+                            {!failedCover ? (
+                                <>
+                                    <Skeleton className="absolute inset-0 w-full h-full rounded-xl" />
+                                    <img
+                                        src={getPrimaryImageUrl(
+                                            item.Id!,
+                                            undefined,
+                                            item.ImageTags?.Primary
+                                        )}
+                                        alt={item.Name + ' Cover'}
+                                        className="object-cover rounded-xl w-full h-full relative z-10"
+                                        onError={() => setFailedCover(true)}
+                                    />
+                                </>
+                            ) : (
+                                <ImageOff className="text-muted-foreground w-12 h-12" />
+                            )}
+                        </div>
+                    </div>
+
+                    {/* Right Column (Details) */}
+                    <div className="flex-1 flex flex-col gap-5 w-full text-left">
+                        <div className="flex flex-col gap-1">
+                            <span className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">{listType}</span>
+                            <h1 className="text-4xl sm:text-5xl font-bold tracking-tight mb-2 text-wrap balance">
+                                {item.Name}
+                            </h1>
                             <div className="flex flex-wrap gap-2 mt-1">
                                 {item.ArtistItems &&
                                     item.ArtistItems.slice(0, MAX_ARTISTS_DISPLAYED).map(
                                         (artist) => (
-                                            <Link
+                                            <Badge
                                                 key={artist.Id}
-                                                to={`/item/${artist.Id}`}
-                                                className="bg-accent/20 rounded-full text-sm"
+                                                variant="secondary"
+                                                className="bg-white/5 hover:bg-white/10 border-white/5 text-foreground hover:underline transition-colors px-2.5 py-0.5"
+                                                asChild
                                             >
-                                                {artist.Name}
-                                            </Link>
+                                                <Link to={`/item/${artist.Id}`}>
+                                                    {artist.Name}
+                                                </Link>
+                                            </Badge>
                                         )
                                     )}
                                 {item.ArtistItems &&
@@ -280,26 +293,40 @@ const BaseMusicListPage = ({ item, config, listType }: BaseMusicListPageProps) =
                                         </span>
                                     )}
                             </div>
-                            <div className="text-sm text-muted-foreground mt-1">
-                                {detailItems.join(' • ')}
-                            </div>
+                        </div>
+
+                        {/* Badges/Details Row */}
+                        <div className="flex flex-wrap gap-2 text-sm text-muted-foreground">
+                            {detailItems.join(' • ')}
+                        </div>
+
+                        {/* Overview */}
+                        {item.Overview && (
+                            <p className="text-base text-foreground/90 leading-relaxed font-normal max-w-3xl mt-2">
+                                {item.Overview}
+                            </p>
+                        )}
+
+                        {/* Actions */}
+                        <div className="flex flex-wrap gap-2.5 items-center mt-2">
+                            <Button onClick={handlePlayAlbum} className="cursor-pointer">
+                                <Play className="w-4 h-4 fill-current mr-1.5" />
+                                {t('play')}
+                            </Button>
+                            <FavoriteButton
+                                item={item}
+                                size="default"
+                                showFavoriteButton={config.itemPage?.favoriteButton?.includes(
+                                    item.Type!
+                                )}
+                            />
+                            <ItemAdminButton item={item} />
                         </div>
                     </div>
-                    {/* <p className="text-sm text-muted-foreground line-clamp-2">{item.Overview}</p> */}
-                    <div className="flex flex-wrap gap-2">
-                        <Button onClick={handlePlayAlbum}>
-                            <Play />
-                            {t('play')}
-                        </Button>
-                        <FavoriteButton
-                            item={item}
-                            size={'icon'}
-                            showFavoriteButton={config.itemPage?.favoriteButton?.includes(
-                                item.Type!
-                            )}
-                        />
-                        <ItemAdminButton item={item} />
-                    </div>
+                </div>
+
+                {/* Tracks list below */}
+                <div className="w-full mt-6 relative z-10">
                     {isLoadingAlbumTracks && (
                         <div className="flex flex-col gap-0">
                             <div className="flex items-center p-2 px-8 group text-muted-foreground">
@@ -362,7 +389,7 @@ const BaseMusicListPage = ({ item, config, listType }: BaseMusicListPageProps) =
                                             </div>
                                             {track.RunTimeTicks !== undefined &&
                                                 track.RunTimeTicks !== null && (
-                                                    <span className="text-sm text-muted-foreground ml-auto">
+                                                    <span className="text-sm text-muted-foreground ml-auto font-mono">
                                                         {ticksToReadableMusicTime(
                                                             track.RunTimeTicks
                                                         )}
@@ -382,7 +409,7 @@ const BaseMusicListPage = ({ item, config, listType }: BaseMusicListPageProps) =
                     )}
                 </div>
             </div>
-        </div>
+        </BaseMediaPage>
     );
 };
 
