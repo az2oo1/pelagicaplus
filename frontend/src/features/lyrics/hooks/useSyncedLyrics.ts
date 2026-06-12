@@ -20,10 +20,7 @@ export function useSyncedLyrics({
     const [autoScrollPaused, setAutoScrollPaused] = useState(false);
     const lineRefs = useRef<(HTMLElement | null)[]>([]);
     const graceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-    const isProgrammaticScrollRef = useRef(false);
     const { containerRef, edgePadding } = useLyricsEdgePadding(enabled);
-
-    const autoScrollEnabled = enabled && !autoScrollPaused;
 
     const activeIndex = useMemo(() => {
         if (!enabled || !lines.length) {
@@ -41,14 +38,6 @@ export function useSyncedLyrics({
         }
     }, []);
 
-    useEffect(() => clearGraceTimer, [clearGraceTimer]);
-
-    useEffect(() => {
-        if (!enabled) {
-            clearGraceTimer();
-        }
-    }, [clearGraceTimer, enabled]);
-
     const scrollActiveLineIntoView = useCallback(
         (behavior: ScrollBehavior = 'smooth') => {
             const container = containerRef.current;
@@ -64,25 +53,22 @@ export function useSyncedLyrics({
             const targetScrollTop =
                 lineTop - container.clientHeight / 2 + activeLine.clientHeight / 2;
 
-            isProgrammaticScrollRef.current = true;
             container.scrollTo({
                 top: Math.max(0, targetScrollTop),
                 behavior,
             });
-            window.setTimeout(() => {
-                isProgrammaticScrollRef.current = false;
-            }, 100);
         },
         [activeIndex, containerRef]
     );
 
+    // Auto-scroll effect: scrolls to active line whenever activeIndex changes
     useEffect(() => {
-        if (!autoScrollEnabled || activeIndex < 0) {
+        if (!enabled || autoScrollPaused || activeIndex < 0) {
             return;
         }
 
         scrollActiveLineIntoView('smooth');
-    }, [activeIndex, autoScrollEnabled, scrollActiveLineIntoView]);
+    }, [activeIndex, enabled, autoScrollPaused, scrollActiveLineIntoView]);
 
     const pauseAutoScroll = useCallback(() => {
         setAutoScrollPaused(true);
@@ -90,25 +76,30 @@ export function useSyncedLyrics({
 
         graceTimerRef.current = setTimeout(() => {
             setAutoScrollPaused(false);
+            // Immediately catch up to the active line when resuming
+            scrollActiveLineIntoView('smooth');
         }, lyricsAutoScrollGraceMs);
-    }, [clearGraceTimer]);
+    }, [clearGraceTimer, scrollActiveLineIntoView]);
 
     const onUserScroll = useCallback(() => {
-        if (isProgrammaticScrollRef.current) {
-            return;
-        }
-
+        // Direct user scroll interaction: pause auto-scrolling
         pauseAutoScroll();
     }, [pauseAutoScroll]);
 
     const enableAutoScroll = useCallback(() => {
         clearGraceTimer();
         setAutoScrollPaused(false);
-    }, [clearGraceTimer]);
+        scrollActiveLineIntoView('smooth');
+    }, [clearGraceTimer, scrollActiveLineIntoView]);
 
     const setLineRef = useCallback((index: number, element: HTMLElement | null) => {
         lineRefs.current[index] = element;
     }, []);
+
+    // Clean up timers on unmount
+    useEffect(() => {
+        return () => clearGraceTimer();
+    }, [clearGraceTimer]);
 
     return {
         activeIndex,

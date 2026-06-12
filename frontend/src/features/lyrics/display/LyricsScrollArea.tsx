@@ -33,9 +33,9 @@ const LyricsScrollArea = ({
     const handleScroll = () => {
         if (isScrolling) {
             resetTimeout();
-        }
-        if (onUserScroll) {
-            onUserScroll();
+            if (onUserScroll) {
+                onUserScroll();
+            }
         }
     };
 
