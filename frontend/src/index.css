@@ -211,13 +211,13 @@ body {
 
 /* Custom Subtitle Styling & Positioning */
 .video-js .vjs-text-track-display {
-    transform: translateY(calc(-1 * var(--subtitle-offset, 0px))) !important;
-    transition: transform 0.2s ease-out;
+    font-size: var(--subtitle-size, 100%) !important;
 }
 
-.video-js .vjs-text-track-cue {
-    font-size: var(--subtitle-size, 100%) !important;
-    transition: font-size 0.2s ease-out;
+.video-js .vjs-text-track-cue,
+.video-js .vjs-text-track-cue * {
+    font-size: 1em !important;
+    line-height: inherit !important;
 }
 
 

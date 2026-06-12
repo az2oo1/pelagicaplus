@@ -89,9 +89,9 @@ const PlayerPage = () => {
         const saved = localStorage.getItem('playerSubtitleSize');
         return saved ? parseInt(saved, 10) : 100;
     });
-    const [subtitleOffset, setSubtitleOffset] = useState<number>(() => {
-        const saved = localStorage.getItem('playerSubtitleOffset');
-        return saved ? parseInt(saved, 10) : 0;
+    const [subtitleDelay, setSubtitleDelay] = useState<number>(() => {
+        const saved = localStorage.getItem('playerSubtitleDelay');
+        return saved ? parseFloat(saved) : 0.0;
     });
 
     useEffect(() => {
@@ -99,8 +99,8 @@ const PlayerPage = () => {
     }, [subtitleSize]);
 
     useEffect(() => {
-        localStorage.setItem('playerSubtitleOffset', subtitleOffset.toString());
-    }, [subtitleOffset]);
+        localStorage.setItem('playerSubtitleDelay', subtitleDelay.toString());
+    }, [subtitleDelay]);
 
     const containerRef = useRef<HTMLDivElement>(null);
     const progressReportingIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -330,7 +330,6 @@ const PlayerPage = () => {
             className="relative w-full h-screen bg-black flex overflow-hidden"
             style={{
                 '--subtitle-size': `${subtitleSize}%`,
-                '--subtitle-offset': `${subtitleOffset}px`,
             } as React.CSSProperties}
         >
             {config.showContentAdvisory !== false && (
@@ -348,6 +347,7 @@ const PlayerPage = () => {
                 subtitles={subtitleTracks}
                 isAudioSwitchRef={isAudioSwitchRef}
                 subtitleTrackIndex={subtitleTrackIndex}
+                subtitleDelay={subtitleDelay}
             />
             <PlayerControls
                 item={item}
@@ -358,8 +358,8 @@ const PlayerPage = () => {
                 onSubtitleTrackChange={handleSubtitleTrackChange}
                 subtitleSize={subtitleSize}
                 setSubtitleSize={setSubtitleSize}
-                subtitleOffset={subtitleOffset}
-                setSubtitleOffset={setSubtitleOffset}
+                subtitleDelay={subtitleDelay}
+                setSubtitleDelay={setSubtitleDelay}
                 isFullscreen={isFullscreen}
                 onFullscreenToggle={handleToggleFullscreen}
                 mediaSegments={mediaSegments}

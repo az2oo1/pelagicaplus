@@ -109,8 +109,8 @@ interface PlayerControlsProps {
     onSubtitleTrackChange: (index: number | null) => void;
     subtitleSize: number;
     setSubtitleSize: React.Dispatch<React.SetStateAction<number>>;
-    subtitleOffset: number;
-    setSubtitleOffset: React.Dispatch<React.SetStateAction<number>>;
+    subtitleDelay: number;
+    setSubtitleDelay: React.Dispatch<React.SetStateAction<number>>;
     isFullscreen: boolean;
     onFullscreenToggle?: () => void;
     mediaSegments?: MediaSegmentDto[];
@@ -129,8 +129,8 @@ const PlayerControls = ({
     onSubtitleTrackChange,
     subtitleSize,
     setSubtitleSize,
-    subtitleOffset,
-    setSubtitleOffset,
+    subtitleDelay,
+    setSubtitleDelay,
     isFullscreen,
     onFullscreenToggle,
     mediaSegments,
@@ -924,7 +924,7 @@ const PlayerControls = ({
                                     </div>
 
                                     <DropdownMenuSeparator />
-                                    <DropdownMenuLabel>Vertical Offset</DropdownMenuLabel>
+                                    <DropdownMenuLabel>Subtitle Delay</DropdownMenuLabel>
                                     <div className="flex items-center justify-between px-3 py-1 text-xs">
                                         <Button
                                             variant="outline"
@@ -933,12 +933,14 @@ const PlayerControls = ({
                                             onClick={(e) => {
                                                 e.preventDefault();
                                                 e.stopPropagation();
-                                                setSubtitleOffset((prev) => Math.max(0, prev - 10));
+                                                setSubtitleDelay((prev) => Math.max(-10, parseFloat((prev - 0.5).toFixed(1))));
                                             }}
                                         >
                                             -
                                         </Button>
-                                        <span className="font-mono text-white">{subtitleOffset}px</span>
+                                        <span className="font-mono text-white">
+                                            {subtitleDelay > 0 ? '+' : ''}{subtitleDelay.toFixed(1)}s
+                                        </span>
                                         <Button
                                             variant="outline"
                                             size="sm"
@@ -946,7 +948,7 @@ const PlayerControls = ({
                                             onClick={(e) => {
                                                 e.preventDefault();
                                                 e.stopPropagation();
-                                                setSubtitleOffset((prev) => Math.min(300, prev + 10));
+                                                setSubtitleDelay((prev) => Math.min(10, parseFloat((prev + 0.5).toFixed(1))));
                                             }}
                                         >
                                             +

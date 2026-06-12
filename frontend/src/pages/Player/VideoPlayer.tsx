@@ -20,7 +20,44 @@ interface VideoPlayerProps {
     onReady?: (player: VideoJsPlayer) => void;
     isAudioSwitchRef: React.MutableRefObject<boolean>;
     subtitleTrackIndex: number | null;
+    subtitleDelay: number;
 }
+
+const adjustTrackCues = (track: any, delay: number) => {
+    if (!track) return;
+
+    if (track.adjustInterval) {
+        clearInterval(track.adjustInterval);
+        track.adjustInterval = null;
+    }
+
+    const applyDelay = () => {
+        if (!track.cues || track.cues.length === 0) return false;
+        for (let i = 0; i < track.cues.length; i++) {
+            const cue = track.cues[i];
+            if (cue.originalStart === undefined) {
+                cue.originalStart = cue.startTime;
+                cue.originalEnd = cue.endTime;
+            }
+            cue.startTime = cue.originalStart + delay;
+            cue.endTime = cue.originalEnd + delay;
+        }
+        return true;
+    };
+
+    // Try immediately
+    if (applyDelay()) return;
+
+    // If not loaded yet, poll for it (e.g. up to 10 seconds)
+    let attempts = 0;
+    track.adjustInterval = setInterval(() => {
+        attempts++;
+        if (applyDelay() || attempts > 100) {
+            clearInterval(track.adjustInterval);
+            track.adjustInterval = null;
+        }
+    }, 100);
+};
 
 const VideoPlayer = ({
     src,
@@ -30,6 +67,7 @@ const VideoPlayer = ({
     onReady,
     isAudioSwitchRef,
     subtitleTrackIndex,
+    subtitleDelay,
 }: VideoPlayerProps) => {
     const videoRef = useRef<HTMLVideoElement | null>(null);
     const playerRef = useRef<VideoJsPlayer | null>(null);
@@ -182,6 +220,21 @@ const VideoPlayer = ({
             document.removeEventListener('visibilitychange', handleVisibilityChange);
         };
     }, [subtitles, src, subtitleTrackIndex]);
+
+    useEffect(() => {
+        if (!playerRef.current) return;
+        const player = playerRef.current;
+        const tracks = player.remoteTextTracks();
+        
+        let activeTrack: any = null;
+        if (subtitleTrackIndex !== null && subtitleTrackIndex >= 0) {
+            activeTrack = tracks.tracks_[subtitleTrackIndex];
+        }
+        
+        if (activeTrack) {
+            adjustTrackCues(activeTrack, subtitleDelay);
+        }
+    }, [subtitleDelay, subtitleTrackIndex, subtitles, src]);
 
     return (
         <div
