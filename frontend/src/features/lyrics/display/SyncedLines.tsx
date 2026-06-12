@@ -49,6 +49,7 @@ const SyncedLines = ({
                         key={`${index}-${line.Text}`}
                         ref={(element) => setLineRef(index, element)}
                         type="button"
+                        tabIndex={-1}
                         className={cn(getLineClassName(state), syncedLineClassName)}
                         onClick={() => {
                             enableAutoScroll();
