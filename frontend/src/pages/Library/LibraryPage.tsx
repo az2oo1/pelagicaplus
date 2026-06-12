@@ -361,7 +361,7 @@ const LibraryPage = () => {
                 value={activeLibraryId}
                 onValueChange={handleLibraryChange}
                 className="w-full"
-                activationMode="automatic"
+                activationMode="manual"
             >
                 <div className="flex flex-col sm:items-center sm:justify-between sm:flex-row gap-2">
                     <TabsList className="max-w-full overflow-auto">
