@@ -27,9 +27,11 @@ export const StudioDisplay = ({
         <Link
             to={`/studio/${item.id}?name=${encodeURIComponent(item.name)}`}
             key={item.id}
-            className={'group w-min min-w-36 lg:min-w-48 2xl:min-w-64'}
+            className={'group w-min min-w-36 lg:min-w-48 2xl:min-w-64 outline-none focus:outline-none focus-visible:outline-none'}
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
+            onFocus={() => setIsHovered(true)}
+            onBlur={() => setIsHovered(false)}
         >
             <div className="relative w-full aspect-video rounded-md overflow-hidden bg-muted">
                 <img

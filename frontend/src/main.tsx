@@ -12,6 +12,7 @@ import LibraryPage from './pages/Library/LibraryPage.tsx';
 import { SearchProvider } from './context/SearchProvider.tsx';
 import { SearchCommand } from './components/SearchCommand.tsx';
 import { KeyboardShortcuts } from './components/KeyboardShortcuts.tsx';
+import { SpatialNavigation } from './components/SpatialNavigation.tsx';
 import ItemPage from './pages/Item/ItemPage.tsx';
 import StudioPage from './pages/Item/StudioPage.tsx';
 import NotFoundPage from './pages/NotFound/NotFoundPage.tsx';
@@ -44,6 +45,7 @@ createRoot(document.getElementById('root')!).render(
                 <SearchProvider>
                     <BrowserRouter>
                         <KeyboardShortcuts />
+                        <SpatialNavigation />
                         <SearchCommand />
                         <PelagicaThemeLoader />
                         <Toaster />
