@@ -299,7 +299,6 @@ export function NavUser() {
             .then(() => {
                 setAuthorizeQuickConnectLoading(false);
                 setQuickConnectSuccess(true);
-                console.log('Quick Connect authorized successfully');
             })
             .catch((error) => {
                 // Jellyfin's Quick Connect authorize endpoint returns a 500 error even on success
@@ -307,7 +306,6 @@ export function NavUser() {
                 if (error?.response?.status === 500) {
                     setAuthorizeQuickConnectLoading(false);
                     setQuickConnectSuccess(true);
-                    console.log('Quick Connect authorized successfully (500 workaround)');
                 } else {
                     setAuthorizeQuickConnectLoading(false);
                     setQuickConnectError(true);
