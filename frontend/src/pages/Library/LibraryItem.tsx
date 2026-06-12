@@ -50,7 +50,7 @@ const LibraryItem = ({
         <Link
             to={`/item/${item.Id}`}
             key={item.Id}
-            className="p-0 m-0 group block outline-none focus:outline-none focus-visible:outline-none"
+            className="library-item-link p-0 m-0 group block outline-none focus:outline-none focus-visible:outline-none"
             onClick={handleClick}
         >
             <div

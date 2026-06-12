@@ -102,6 +102,22 @@ const LibraryContent = ({
         sortOrder,
     });
 
+    const [wasLoading, setWasLoading] = useState(isLoading);
+    useEffect(() => {
+        if (wasLoading && !isLoading) {
+            const activeEl = document.activeElement;
+            if (!activeEl || activeEl === document.body || activeEl.id === 'loading-skeleton-container') {
+                setTimeout(() => {
+                    const firstItem = document.querySelector('.library-item-link') as HTMLElement;
+                    if (firstItem) {
+                        firstItem.focus({ preventScroll: true });
+                    }
+                }, 50);
+            }
+        }
+        setWasLoading(isLoading);
+    }, [isLoading, wasLoading]);
+
     const posterUrls = useMemo(() => {
         if (!libraryData) return {};
         return libraryData.items.reduce(
@@ -139,7 +155,11 @@ const LibraryContent = ({
     return (
         <div className="mb-4">
             {isLoading && (
-                <div className="w-full gap-4 mt-2 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-7 2xl:grid-cols-9">
+                <div
+                    tabIndex={0}
+                    id="loading-skeleton-container"
+                    className="w-full gap-4 mt-2 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-7 2xl:grid-cols-9 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand rounded-md animate-pulse"
+                >
                     {Array.from({ length: pageSize }).map((_, i) => (
                         <div key={i} className="p-0 m-0">
                             <div className="relative w-full aspect-[2/3] overflow-hidden rounded-md">
@@ -206,9 +226,14 @@ const LibraryPage = () => {
 
     const sortByParam = useMemo(() => {
         const urlParam = searchParams.get('sortBy');
-        if (urlParam) return urlParam as ItemSortBy;
+        if (urlParam) {
+            if (urlParam === 'DateLastPlayed') return 'DatePlayed' as ItemSortBy;
+            return urlParam as ItemSortBy;
+        }
         if (typeof window !== 'undefined') {
-            return (localStorage.getItem('pelagica_library_sort_by') as ItemSortBy) || 'Name';
+            const saved = (localStorage.getItem('pelagica_library_sort_by') as ItemSortBy) || 'Name';
+            if (saved as string === 'DateLastPlayed') return 'DatePlayed' as ItemSortBy;
+            return saved;
         }
         return 'Name';
     }, [searchParams]);
@@ -270,9 +295,30 @@ const LibraryPage = () => {
             : 'all';
         setItemType(savedType);
 
-        const savedSortBy = typeof window !== 'undefined'
+        let savedSortBy = typeof window !== 'undefined'
             ? (localStorage.getItem('pelagica_library_sort_by') as ItemSortBy) || 'Name'
             : 'Name';
+
+        if (savedSortBy as string === 'DateLastPlayed') {
+            savedSortBy = 'DatePlayed';
+        }
+
+        // Validate sorting selection for the new library type to prevent illegal state
+        const movieOnlySorts = ['CommunityRating', 'CriticRating', 'OfficialRating', 'PremiereDate'];
+        const musicOnlySorts = ['Artist', 'AlbumArtist', 'ProductionYear'];
+
+        if (nextIsMusic && movieOnlySorts.includes(savedSortBy)) {
+            savedSortBy = 'Name';
+            if (typeof window !== 'undefined') {
+                localStorage.setItem('pelagica_library_sort_by', 'Name');
+            }
+        } else if (!nextIsMusic && musicOnlySorts.includes(savedSortBy)) {
+            savedSortBy = 'Name';
+            if (typeof window !== 'undefined') {
+                localStorage.setItem('pelagica_library_sort_by', 'Name');
+            }
+        }
+
         const savedSortOrder = typeof window !== 'undefined'
             ? (localStorage.getItem('pelagica_library_sort_order') as SortOrder) || 'Ascending'
             : 'Ascending';
@@ -315,7 +361,7 @@ const LibraryPage = () => {
                 value={activeLibraryId}
                 onValueChange={handleLibraryChange}
                 className="w-full"
-                activationMode="manual"
+                activationMode="automatic"
             >
                 <div className="flex flex-col sm:items-center sm:justify-between sm:flex-row gap-2">
                     <TabsList className="max-w-full overflow-auto">
@@ -384,33 +430,53 @@ const LibraryPage = () => {
                                     <Shuffle />
                                     {t('sort_random')}
                                 </SelectItem>
-                                <SelectItem value="CommunityRating">
-                                    <Star />
-                                    {t('sort_community_rating')}
-                                </SelectItem>
-                                <SelectItem value="CriticRating">
-                                    <Award />
-                                    {t('sort_critic_rating')}
-                                </SelectItem>
+                                {!isMusicLibrary && (
+                                    <>
+                                        <SelectItem value="CommunityRating">
+                                            <Star />
+                                            {t('sort_community_rating')}
+                                        </SelectItem>
+                                        <SelectItem value="CriticRating">
+                                            <Award />
+                                            {t('sort_critic_rating')}
+                                        </SelectItem>
+                                        <SelectItem value="OfficialRating">
+                                            <Shield />
+                                            {t('sort_parental_rating')}
+                                        </SelectItem>
+                                        <SelectItem value="PremiereDate">
+                                            <Calendar />
+                                            {t('sort_premiere_date')}
+                                        </SelectItem>
+                                    </>
+                                )}
+                                {isMusicLibrary && (
+                                    <>
+                                        <SelectItem value="Artist">
+                                            <CaseSensitive />
+                                            {t('sort_artist', { defaultValue: 'Artist' })}
+                                        </SelectItem>
+                                        <SelectItem value="AlbumArtist">
+                                            <CaseSensitive />
+                                            {t('sort_album_artist', { defaultValue: 'Album Artist' })}
+                                        </SelectItem>
+                                        <SelectItem value="ProductionYear">
+                                            <Calendar />
+                                            {t('sort_release_date', { defaultValue: 'Release Date' })}
+                                        </SelectItem>
+                                    </>
+                                )}
                                 <SelectItem value="DateCreated">
                                     <CalendarPlus />
                                     {t('sort_date_added')}
                                 </SelectItem>
-                                <SelectItem value="DateLastPlayed">
+                                <SelectItem value="DatePlayed">
                                     <History />
                                     {t('sort_date_played')}
-                                </SelectItem>
-                                <SelectItem value="OfficialRating">
-                                    <Shield />
-                                    {t('sort_parental_rating')}
                                 </SelectItem>
                                 <SelectItem value="PlayCount">
                                     <Play />
                                     {t('sort_play_count')}
-                                </SelectItem>
-                                <SelectItem value="PremiereDate">
-                                    <Calendar />
-                                    {t('sort_premiere_date')}
                                 </SelectItem>
                                 <SelectItem value="Runtime">
                                     <Clock />
