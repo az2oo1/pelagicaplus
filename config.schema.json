@@ -4,6 +4,10 @@
   "definitions": {
     "AppConfig": {
       "properties": {
+        "enableBlur": {
+          "description": "Whether to enable backdrop blur effects (can make the app feel heavy if disabled)",
+          "type": "boolean"
+        },
         "homeScreenSections": {
           "description": "Sections to display on the home screen, in order",
           "items": {
@@ -30,6 +34,10 @@
           "description": "URL for the light mode logo",
           "type": "string"
         },
+        "seerrUrl": {
+          "description": "Optional URL for Seerr integration",
+          "type": "string"
+        },
         "serverAddress": {
           "description": "Optional server address to automatically choose",
           "type": "string"
@@ -42,12 +50,37 @@
           "description": "Id of the theme that is applied for all users by default",
           "type": "string"
         },
+        "showContentAdvisory": {
+          "description": "Whether to show the 10-second Netflix-style content advisory on playback",
+          "type": "boolean"
+        },
+        "showGenreTags": {
+          "description": "Whether to show genre tags on posters",
+          "type": "boolean"
+        },
+        "showPauseOverlay": {
+          "description": "Whether to show the immersive pause overlay screensaver after 15 seconds",
+          "type": "boolean"
+        },
+        "showPosterTags": {
+          "description": "Whether to show poster tags like HD/4K/CC on the home screen library items",
+          "type": "boolean"
+        },
         "showStreamystatsButton": {
           "description": "Whether to show the Streamystats button in the user menu",
           "type": "boolean"
         },
         "streamystatsUrl": {
           "description": "Optional URL for Streamystats integration",
+          "type": "string"
+        },
+        "topBarBehavior": {
+          "description": "Behavior of the top bar (sticky, hidden, transparent, etc)",
+          "enum": [
+            "sticky",
+            "fixed",
+            "hidden"
+          ],
           "type": "string"
         },
         "watchedStateBadgeGenre": {
@@ -704,6 +737,20 @@
         "type": {
           "const": "recentlyAdded",
           "type": "string"
+        },
+        "types": {
+          "description": "Filter by media types",
+          "items": {
+            "enum": [
+              "Movie",
+              "Series",
+              "BoxSet",
+              "MusicAlbum",
+              "Playlist"
+            ],
+            "type": "string"
+          },
+          "type": "array"
         }
       },
       "required": [

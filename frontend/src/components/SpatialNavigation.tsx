@@ -95,9 +95,10 @@ export const SpatialNavigation = () => {
             });
 
             if (bestCandidate) {
-                (bestCandidate as HTMLElement).focus();
+                const element = bestCandidate as HTMLElement;
+                element.focus();
                 // Smoothly center the newly focused item in its scrollable container or view
-                bestCandidate.scrollIntoView({
+                element.scrollIntoView({
                     behavior: 'smooth',
                     block: 'nearest',
                     inline: 'center',
