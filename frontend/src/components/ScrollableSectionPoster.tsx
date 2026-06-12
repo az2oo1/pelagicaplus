@@ -74,7 +74,7 @@ const ScrollableSectionPoster = ({
             <Link
                 to={`/item/${itemId || item?.Id}`}
                 key={itemId || item?.Id}
-                className={cn('group block', className)}
+                className={cn('group block outline-none focus:outline-none focus-visible:outline-none', className)}
                 onClick={handleClick}
             >
                 <div
@@ -100,7 +100,7 @@ const ScrollableSectionPoster = ({
         <Link
             to={`/item/${itemId || item?.Id}`}
             key={itemId || item?.Id}
-            className={cn('group block', className)}
+            className={cn('group block outline-none focus:outline-none focus-visible:outline-none', className)}
             onClick={handleClick}
         >
             <div className={`relative overflow-hidden rounded-md ${posterClasses}`}>
@@ -126,6 +126,7 @@ const ScrollableSectionPoster = ({
                                   'transition-[opacity,transform,scale] duration-[250ms] ease-out',
                                   'opacity-100 scale-100',
                                   'group-hover:opacity-90 group-hover:scale-105',
+                                  'group-focus-within:opacity-90 group-focus-within:scale-105',
                               ].join(' ')
                             : // While loading: blurred/dim, NO transition (instant snap on load)
                               'opacity-40 scale-95 blur-sm'
