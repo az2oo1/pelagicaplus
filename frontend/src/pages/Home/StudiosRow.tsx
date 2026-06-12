@@ -1,6 +1,6 @@
 import SectionScroller from '@/components/SectionScroller';
 import { Skeleton } from '@/components/ui/skeleton';
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router';
 import { ChevronRight } from 'lucide-react';
 import { useStudiosByItemCount } from '../../hooks/api/useStudiosApi';
@@ -22,6 +22,20 @@ export const StudioDisplay = ({
 }) => {
     const [isImageLoaded, setIsImageLoaded] = useState(false);
     const [isHovered, setIsHovered] = useState(false);
+    const videoRef = useRef<HTMLVideoElement>(null);
+
+    useEffect(() => {
+        const video = videoRef.current;
+        if (!video) return;
+        if (isHovered) {
+            video.play().catch((err) => {
+                console.warn('Video play failed:', err);
+            });
+        } else {
+            video.pause();
+            video.currentTime = 0;
+        }
+    }, [isHovered]);
 
     return (
         <Link
@@ -49,16 +63,18 @@ export const StudioDisplay = ({
                 {!isImageLoaded && <Skeleton className="absolute inset-0 -z-1" />}
                 <div className="absolute inset-0 rounded-md pointer-events-none poster-card-outline z-40" />
                 
-                {isHovered && (
-                    <video
-                        src={`/api/studios/search/video?name=${encodeURIComponent(item.name)}`}
-                        className="absolute inset-0 w-full h-full object-cover z-30 pointer-events-none transition-opacity duration-500 animate-in fade-in zoom-in-95"
-                        autoPlay
-                        loop
-                        muted
-                        playsInline
-                    />
-                )}
+                <video
+                    ref={videoRef}
+                    src={`/api/studios/search/video?name=${encodeURIComponent(item.name)}`}
+                    className={cn(
+                        "absolute inset-0 w-full h-full object-cover z-30 pointer-events-none transition-all duration-500",
+                        isHovered ? "opacity-100 scale-100" : "opacity-0 scale-95 pointer-events-none"
+                    )}
+                    preload="auto"
+                    loop
+                    muted
+                    playsInline
+                />
             </div>
         </Link>
     );
