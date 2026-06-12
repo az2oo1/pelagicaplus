@@ -58,7 +58,8 @@ export const SpatialNavigation = () => {
                 activeEl.isContentEditable ||
                 activeEl.closest('[role="menu"], [role="listbox"], [data-slot="dropdown-menu-content"], [data-slot="dropdown-menu-sub-content"], [data-slot="select-content"]') !== null
             );
-            if (shouldBypass) {
+            const inTablist = activeEl && activeEl.closest('[role="tablist"], [data-slot="tabs-list"]') !== null;
+            if (shouldBypass || (inTablist && ['ArrowLeft', 'ArrowRight'].includes(direction))) {
                 return;
             }
 
