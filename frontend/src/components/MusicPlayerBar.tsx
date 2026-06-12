@@ -152,7 +152,7 @@ const MusicPlayerBar = () => {
                 <div className="absolute inset-0 bg-black/60 -z-10 pointer-events-none" />
 
                 {/* Header */}
-                <div className="flex justify-between items-center p-4 border-b border-white/10 max-w-6xl mx-auto w-full relative z-10">
+                <div className="flex justify-between items-center p-4 border-b border-white/10 w-full px-6 md:px-16 lg:px-24 relative z-10">
                     <Button variant="ghost" size="icon" onClick={() => setIsExpanded(false)} className="hover:scale-110 active:scale-90 transition-transform text-white/80 hover:text-white hover:bg-white/10">
                         <ChevronDown className="h-6 w-6" />
                     </Button>
@@ -165,14 +165,21 @@ const MusicPlayerBar = () => {
                 </div>
 
                 {/* Content Container */}
-                <div className="flex-1 overflow-y-auto max-w-6xl mx-auto w-full p-6 md:p-12 flex flex-col justify-center relative z-10">
+                <div className="flex-1 overflow-y-auto w-full p-6 md:p-12 px-6 md:px-16 lg:px-24 flex flex-col justify-center relative z-10 transition-all duration-300">
                     <div className={cn(
-                        "grid gap-12 items-center w-full",
-                        showLyricsInline && lyricsPanelProps ? "grid-cols-1 md:grid-cols-2" : "grid-cols-1 max-w-xl mx-auto"
+                        "grid gap-12 items-center w-full transition-all duration-300",
+                        showLyricsInline && lyricsPanelProps
+                            ? "grid-cols-1 md:grid-cols-[380px_1fr]"
+                            : "grid-cols-1 max-w-xl mx-auto"
                     )}>
                         
                         {/* Left column: Album details and cover */}
-                        <div className="flex flex-col items-start justify-center gap-6 w-full text-left max-w-sm mx-auto md:mx-0">
+                        <div className={cn(
+                            "flex flex-col justify-center gap-6 w-full max-w-sm mx-auto transition-all duration-300",
+                            showLyricsInline && lyricsPanelProps
+                                ? "items-start text-left md:mx-0"
+                                : "items-center text-center"
+                        )}>
                             <div className="relative group shadow-2xl rounded-lg overflow-hidden w-full aspect-square border border-white/10">
                                 <img
                                     src={getPrimaryImageUrl(currentTrack.albumId || currentTrack.id, {
@@ -185,7 +192,10 @@ const MusicPlayerBar = () => {
                             </div>
 
                             <div className="w-full flex justify-between items-center gap-4">
-                                <div className="min-w-0 flex-1">
+                                <div className={cn(
+                                    "min-w-0 flex-1",
+                                    showLyricsInline && lyricsPanelProps ? "text-left" : "text-center"
+                                )}>
                                     <h2 className="text-2xl sm:text-3xl font-extrabold truncate text-white tracking-tight leading-tight">
                                         {currentTrack.title}
                                     </h2>
@@ -285,7 +295,7 @@ const MusicPlayerBar = () => {
                         {/* Right column: Integrated Apple Music-style lyrics (Not in a box) */}
                         {showLyricsInline && lyricsPanelProps && (
                             <div 
-                                className="w-full h-[55vh] min-h-[300px] md:h-[65vh] overflow-hidden flex flex-col animate-in fade-in slide-in-from-right-4 duration-300 [&_div]:!items-start [&_div.pointer-events-none]:!hidden [&_div]:[scrollbar-width:none] [&_div]:[-ms-overflow-style:none] [&_div::-webkit-scrollbar]:!w-0 [&_div::-webkit-scrollbar]:!h-0 [&_div::-webkit-scrollbar]:!bg-transparent [&_div.px-4]:!pt-6 [&_div.px-4]:!pb-48 [&_button]:!text-left [&_button]:!max-w-none [&_button]:!px-0 [&_button]:!py-3.5 [&_button]:!text-3xl [&_button]:!font-bold [&_button]:!text-white/30 [&_button]:!bg-transparent [&_button]:!border-none [&_button]:!shadow-none [&_button]:!transform-none [&_button.text-foreground]:!text-white [&_button.text-foreground]:!text-4xl [&_button.text-foreground]:!font-extrabold"
+                                className="w-full h-[55vh] min-h-[300px] md:h-[65vh] overflow-hidden flex flex-col animate-in fade-in slide-in-from-right-4 duration-300 [&_div]:!items-start [&_div.pointer-events-none]:!hidden [&_div.px-4]:!pt-6 [&_div.px-4]:!pb-48 [&_button]:!text-left [&_button]:!max-w-none [&_button]:!px-0 [&_button]:!py-3.5 [&_button]:!text-3xl [&_button]:!font-bold [&_button]:!text-white/30 [&_button]:!bg-transparent [&_button]:!border-none [&_button]:!shadow-none [&_button]:!transform-none [&_button.text-foreground]:!text-white [&_button.text-foreground]:!text-4xl [&_button.text-foreground]:!font-extrabold"
                                 style={{
                                     maskImage: 'linear-gradient(to bottom, transparent 0%, rgba(0,0,0,1) 12%, rgba(0,0,0,1) 85%, transparent 100%)',
                                     WebkitMaskImage: 'linear-gradient(to bottom, transparent 0%, rgba(0,0,0,1) 12%, rgba(0,0,0,1) 85%, transparent 100%)'

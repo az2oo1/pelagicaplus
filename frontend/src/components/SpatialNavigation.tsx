@@ -120,13 +120,19 @@ export const SpatialNavigation = () => {
                 let isCorrectDirection = false;
                 let score = 0;
 
+                const activeTablist = activeEl.closest('[role="tablist"]');
+                const candidateTablist = candidate.closest('[role="tablist"]');
+                const isSameTablist = activeTablist !== null && activeTablist === candidateTablist;
+
                 // Move calculation weights: prioritize closer elements along the primary axis,
                 // and penalize orthogonal deviation (multiplying by 4 to prefer horizontal align when moving horizontally)
                 if (direction === 'ArrowRight') {
-                    isCorrectDirection = dx > 0.1 && Math.abs(dy) <= 50; // horizontal move must stay in same row
+                    const isSameRow = isSameTablist || Math.abs(dy) <= 50;
+                    isCorrectDirection = dx > 0.1 && isSameRow;
                     score = dx + Math.abs(dy) * 4;
                 } else if (direction === 'ArrowLeft') {
-                    isCorrectDirection = dx < -0.1 && Math.abs(dy) <= 50;
+                    const isSameRow = isSameTablist || Math.abs(dy) <= 50;
+                    isCorrectDirection = dx < -0.1 && isSameRow;
                     score = Math.abs(dx) + Math.abs(dy) * 4;
                 } else if (direction === 'ArrowDown') {
                     isCorrectDirection = dy > 0.1;
