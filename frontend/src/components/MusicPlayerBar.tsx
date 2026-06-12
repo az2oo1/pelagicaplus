@@ -167,10 +167,10 @@ const MusicPlayerBar = () => {
                 {/* Content Container */}
                 <div className="flex-1 overflow-y-auto w-full p-6 md:p-12 px-6 md:px-16 lg:px-24 flex flex-col justify-center relative z-10 transition-all duration-300">
                     <div className={cn(
-                        "grid gap-12 items-center w-full transition-all duration-300",
+                        "grid items-center w-full transition-all duration-300",
                         showLyricsInline && lyricsPanelProps
-                            ? "grid-cols-1 md:grid-cols-[380px_1fr]"
-                            : "grid-cols-1 max-w-xl mx-auto"
+                            ? "grid-cols-1 md:grid-cols-[380px_1fr] gap-12 md:gap-20 lg:gap-32"
+                            : "grid-cols-1 max-w-xl mx-auto gap-12"
                     )}>
                         
                         {/* Left column: Album details and cover */}

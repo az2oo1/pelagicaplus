@@ -3,7 +3,7 @@ import { useEffect } from 'react';
 const getFocusableElements = (container: HTMLElement | Document = document): HTMLElement[] => {
     // Select all links, buttons, inputs, selects, textareas, and tabindex focusable elements.
     // We explicitly allow [role="tab"] and [data-slot="tabs-trigger"] to match roving-tabindex tab triggers (which can have tabindex="-1" when inactive).
-    const selector = 'a[href]:not([tabindex="-1"]), button:not([disabled]):not([tabindex="-1"]), input:not([disabled]):not([tabindex="-1"]), select:not([disabled]):not([tabindex="-1"]), textarea:not([disabled]):not([tabindex="-1"]), [tabindex]:not([tabindex="-1"]), [role="tab"], [data-slot="tabs-trigger"]';
+    const selector = 'a[href]:not([tabindex="-1"]), button:not([disabled]):not([tabindex="-1"]), input:not([disabled]):not([tabindex="-1"]), select:not([disabled]):not([tabindex="-1"]), textarea:not([disabled]):not([tabindex="-1"]), [tabindex]:not([tabindex="-1"]), [role="tab"], [data-slot="tabs-trigger"], [role="tablist"] button, [data-slot="tabs-list"] button';
     const elements = Array.from(container.querySelectorAll(selector)) as HTMLElement[];
     
     // Filter to only visible elements
@@ -102,10 +102,16 @@ export const SpatialNavigation = () => {
                 return rect.bottom <= activeRect.top + 10;
             });
 
+            const activeTablist = activeEl.closest('[role="tablist"]');
+            let candidates = focusables;
+            if (activeTablist && ['ArrowLeft', 'ArrowRight'].includes(direction)) {
+                candidates = focusables.filter(candidate => candidate.closest('[role="tablist"]') === activeTablist);
+            }
+
             let bestCandidate: HTMLElement | null = null;
             let minScore = Infinity;
 
-            focusables.forEach(candidate => {
+            candidates.forEach(candidate => {
                 if (candidate === activeEl) return;
 
                 const candidateRect = candidate.getBoundingClientRect();
