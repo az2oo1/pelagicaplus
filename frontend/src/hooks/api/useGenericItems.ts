@@ -53,7 +53,7 @@ export function useGenericItems(configJson: string, options?: GenericItemsOption
                 tags: config?.tags,
                 isFavorite: config?.isFavorite ?? undefined,
                 enableUserData: true,
-                fields: ['Genres'],
+                fields: ['Genres', 'PrimaryImageAspectRatio', 'MediaStreams', 'MediaSources'],
                 filters,
                 locationTypes: ['FileSystem'],
             });

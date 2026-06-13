@@ -37,6 +37,7 @@ export function useStudioItems(studioId: string, options?: StudioItemsOptions) {
                 sortOrder: options?.sortOrder ?? ['Descending'],
                 limit: options?.limit ?? 50,
                 startIndex: options?.startIndex ?? 0,
+                fields: ['PrimaryImageAspectRatio', 'MediaStreams', 'MediaSources'],
             });
 
             return {

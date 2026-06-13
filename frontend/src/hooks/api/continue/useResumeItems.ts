@@ -14,7 +14,7 @@ export function useResumeItems(userId: string | null | undefined, limit: number 
             const res = await itemsApi.getResumeItems({
                 userId: userId!,
                 limit,
-                fields: ['PrimaryImageAspectRatio'],
+                fields: ['PrimaryImageAspectRatio', 'MediaStreams', 'MediaSources'],
                 enableUserData: true,
                 enableImages: true,
             });

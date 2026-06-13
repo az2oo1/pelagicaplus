@@ -86,7 +86,7 @@ const LibraryItem = ({
                 
                 {config?.showPosterTags !== false && (
                     <div className="absolute top-1.5 left-1.5 flex flex-col items-start gap-1.5 z-30 pointer-events-none drop-shadow-md">
-                        {item.HasSubtitles && (
+                        {(item.HasSubtitles || item.MediaStreams?.some(s => s.Type === 'Subtitle') || item.MediaSources?.some(src => src.MediaStreams?.some(s => s.Type === 'Subtitle'))) && (
                             <span className="bg-black/70 backdrop-blur-sm text-white/90 text-[9px] font-bold px-1.5 py-0.5 rounded-[4px] border border-white/20 uppercase tracking-wider">
                                 CC
                             </span>

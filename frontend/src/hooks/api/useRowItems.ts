@@ -31,7 +31,7 @@ export function useRowItems(items?: SectionItemsConfig) {
                 tags: items?.tags,
                 isFavorite: items?.isFavorite ?? undefined,
                 enableUserData: true,
-                fields: ['Genres'],
+                fields: ['Genres', 'PrimaryImageAspectRatio', 'MediaStreams', 'MediaSources'],
                 filters,
                 locationTypes: ['FileSystem'],
             });

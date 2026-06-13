@@ -275,13 +275,18 @@ const DEFAULT_CONFIG: AppConfig = {
     homeScreenSections: [
         {
             type: 'mediaBar',
-            size: 'large',
+            size: 'small',
             items: {
                 sortBy: ['Random'],
                 types: ['Movie', 'Series'],
             },
             showFavoriteButton: true,
             showWatchlistButton: true,
+        },
+        {
+            type: 'studios',
+            title: 'Studios',
+            limit: 20,
         },
         {
             type: 'continueWatching',
@@ -305,11 +310,6 @@ const DEFAULT_CONFIG: AppConfig = {
                 isInKefinTweaksWatchlist: true,
                 limit: 10,
             },
-        },
-        {
-            type: 'studios',
-            title: 'Studios',
-            limit: 20,
         },
         {
             type: 'items',

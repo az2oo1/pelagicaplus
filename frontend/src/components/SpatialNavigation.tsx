@@ -182,35 +182,54 @@ export const SpatialNavigation = () => {
                                   element.closest('.sticky') !== null ||
                                   element.closest('.fixed') !== null;
 
-                if (isControl) {
-                    if (!isStickyOrFixed) {
-                        element.scrollIntoView({
+                const carouselContainer = element.closest('[data-slot="carousel"]') as HTMLElement;
+                if (carouselContainer) {
+                    const rect = element.getBoundingClientRect();
+                    const viewHeight = window.innerHeight || document.documentElement.clientHeight;
+                    const isElementVerticallyInViewport = rect.top >= 0 && rect.bottom <= viewHeight;
+                    if (!isElementVerticallyInViewport) {
+                        carouselContainer.scrollIntoView({
                             behavior: 'smooth',
-                            block: isHorizontal ? 'nearest' : 'center',
+                            block: 'center',
                             inline: 'nearest',
                         });
                     }
-                } else {
-                    if (isHorizontal) {
-                        const parent = element.parentElement;
-                        if (parent && element === parent.firstElementChild) {
-                            parent.scrollTo({ left: 0, behavior: 'smooth' });
-                        } else {
-                            if (!isStickyOrFixed) {
-                                element.scrollIntoView({
-                                    behavior: 'smooth',
-                                    block: 'nearest',
-                                    inline: 'start',
-                                });
-                            }
-                        }
-                    } else {
-                        if (!isStickyOrFixed) {
+                } else if (!isStickyOrFixed) {
+                    const rect = element.getBoundingClientRect();
+                    const viewWidth = window.innerWidth || document.documentElement.clientWidth;
+                    const viewHeight = window.innerHeight || document.documentElement.clientHeight;
+                    const inViewport = 
+                        rect.top >= 0 && 
+                        rect.left >= 0 && 
+                        rect.bottom <= viewHeight && 
+                        rect.right <= viewWidth;
+
+                    if (!inViewport) {
+                        if (isControl) {
                             element.scrollIntoView({
                                 behavior: 'smooth',
-                                block: 'center',
+                                block: isHorizontal ? 'nearest' : 'center',
                                 inline: 'nearest',
                             });
+                        } else {
+                            if (isHorizontal) {
+                                const parent = element.parentElement;
+                                if (parent && element === parent.firstElementChild) {
+                                    parent.scrollTo({ left: 0, behavior: 'smooth' });
+                                } else {
+                                    element.scrollIntoView({
+                                        behavior: 'smooth',
+                                        block: 'nearest',
+                                        inline: 'start',
+                                    });
+                                }
+                            } else {
+                                element.scrollIntoView({
+                                    behavior: 'smooth',
+                                    block: 'center',
+                                    inline: 'nearest',
+                                });
+                            }
                         }
                     }
                 }

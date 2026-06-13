@@ -51,7 +51,7 @@ export function useLibraryItems(
                 recursive: options?.recursive ?? true,
                 includeItemTypes: options?.includeItemTypes,
                 locationTypes: ['FileSystem'],
-                fields: ['PrimaryImageAspectRatio'],
+                fields: ['PrimaryImageAspectRatio', 'MediaStreams', 'MediaSources'],
                 userId: getUserId() || undefined,
             });
             return {
