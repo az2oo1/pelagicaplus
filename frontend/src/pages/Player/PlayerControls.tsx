@@ -719,7 +719,7 @@ const PlayerControls = ({
                 )}
             </div>
             <div
-                className="absolute bottom-0 left-0 right-0 z-20 bg-linear-to-t from-black/80 to-transparent p-4 transition-opacity duration-300"
+                className="absolute bottom-0 left-0 right-0 z-20 bg-linear-to-t from-black/80 to-transparent p-4 transition-opacity duration-300 overflow-x-hidden"
                 style={{
                     opacity: showControls && !showPauseOverlay ? 1 : 0,
                     pointerEvents: showControls && !showPauseOverlay ? 'auto' : 'none',

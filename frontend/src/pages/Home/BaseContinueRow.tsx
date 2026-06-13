@@ -69,6 +69,7 @@ export function BaseContinueRow({
                                           to={`/item/${item.Id}`}
                                           key={item.Id}
                                           className="group w-min min-w-48 lg:min-w-64 2xl:min-w-80 block outline-none focus:outline-none focus-visible:outline-none"
+                                          onDragStart={(e) => e.preventDefault()}
                                       >
                                           <div className="relative w-full aspect-video rounded-md overflow-hidden">
                                               {imageErrors[item.Id!] ? (
@@ -79,6 +80,7 @@ export function BaseContinueRow({
                                               ) : (
                                                   <>
                                                       <img
+                                                          draggable={false}
                                                           src={
                                                               item.SeriesId
                                                                   ? getPrimaryImageUrl(

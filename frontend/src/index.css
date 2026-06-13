@@ -3,6 +3,7 @@
 
 html {
     overflow-y: scroll !important;
+    overflow-x: hidden !important;
 }
 
 body {
@@ -10,6 +11,7 @@ body {
     min-height: 100dvh;
     margin: 0;
     padding: 0;
+    overflow-x: hidden !important;
 
     display: flex;
     justify-content: center;
@@ -18,6 +20,7 @@ body {
 
 #root {
     width: 100%;
+    overflow-x: hidden !important;
     /* background-color: tomato; */
 }
 

@@ -3,6 +3,7 @@ import type { BaseItemDto, ItemSortBy, SortOrder } from '@jellyfin/sdk/lib/gener
 import { getItemsApi } from '@jellyfin/sdk/lib/utils/api/items-api';
 import { useQuery } from '@tanstack/react-query';
 import { getUserId } from '@/utils/localstorageCredentials';
+import { useSearchParams } from 'react-router';
 
 interface StudioItemsOptions {
     sortBy?: ItemSortBy[];
@@ -17,14 +18,14 @@ interface StudioItemsResponse {
 }
 
 export function useStudioItems(studioId: string, options?: StudioItemsOptions) {
+    const [searchParams] = useSearchParams();
+    const studioName = searchParams.get('name');
+
     return useQuery<StudioItemsResponse>({
-        queryKey: ['studio-items', studioId, options],
+        queryKey: ['studio-items', studioId, studioName, options],
         queryFn: async () => {
             const api = getApi();
             const itemsApi = getItemsApi(api);
-
-            const searchParams = new URLSearchParams(window.location.search);
-            const studioName = searchParams.get('name');
 
             const itemsResponse = await itemsApi.getItems({
                 userId: getUserId() || undefined,

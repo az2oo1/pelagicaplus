@@ -103,7 +103,7 @@ const PageContent = ({
     const hasTopBarSpace = !overlayHeader && topBarBehavior === 'sticky';
 
     return (
-        <div className={`relative flex flex-col min-h-dvh ${containerClassName ?? ''}`}>
+        <div className={`relative flex flex-col min-h-dvh overflow-x-hidden ${containerClassName ?? ''}`}>
             {background || bgItem}
             {topBarBehavior !== 'hidden' && <TopBar overlay={overlayHeader} />}
             <div
